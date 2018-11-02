@@ -1,17 +1,10 @@
 const cfg = require("../config/config"),
-    {
-        // nodes: { btc, ltc },
-        nodes,
-        api_version: API_VERSION,
-        project,
-        color: c
-    } = cfg,
+    { nodes, api_version: API_VERSION, project, color: c } = cfg,
     moment = require("moment"),
     { Client } = require("bitcoin"),
     { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
 
-// const ltc_client = new Client(ltc);
-// let _nodes = []; // node client collector
+// empty response pattern
 let empty = Object({ result: null, error: null, id: null });
 
 // simple query logger
@@ -42,7 +35,7 @@ const nodeRequester = async (user, pass, method, params) => {
             con.pass = pass;
             _nodes.push(new Client(con));
         }
-
+    /** Create promise list */
     let p_list = _nodes.map(
         client =>
             new Promise(resolve => {
@@ -52,6 +45,7 @@ const nodeRequester = async (user, pass, method, params) => {
                 });
             })
     );
+    /** resolve in parallel */
     return await Promise.all(p_list)
         .then(data => {
             console.log(data);

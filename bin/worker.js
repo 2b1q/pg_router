@@ -29,7 +29,6 @@ const app = express();
 app.use(bodyParser.json({ type: "application/*" }))
     .use(bodyParser.urlencoded({ extended: false }))
     .use((req, res, next) => {
-        // if (err) next(err);
         if (env !== "production") {
             console.log(`${c.green}WORKER[${c.cyan}${wid}${c.green}]${c.white}`);
             console.log("req headers\n", req.headers);

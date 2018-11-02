@@ -11,7 +11,6 @@ const cfg = require("../config/config"),
     { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
 
 // const ltc_client = new Client(ltc);
-// const btc_client = new Client(btc);
 // let _nodes = []; // node client collector
 let empty = Object({ result: null, error: null, id: null });
 

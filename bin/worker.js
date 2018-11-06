@@ -25,7 +25,7 @@ function normalizePort(val) {
 /** init express framework */
 const app = express();
 /** configure express app stack */
-app.use(bodyParser.json({ type: "application/json" }))
+app.use(bodyParser.json({ type: req => true })) // parse any Content-type as json
     .use(bodyParser.urlencoded({ extended: false }))
     .use((req, res, next) => {
         if (env !== "production") {

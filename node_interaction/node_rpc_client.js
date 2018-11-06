@@ -27,6 +27,8 @@ let logit = (req, msg = "") =>
 /** common node request wrapper*/
 const nodeRequester = async (user, pass, method, params) => {
     let _nodes = []; // node client collector
+    let cmd = Object([{ method: method, params: params }]);
+    console.log("cmd: ", cmd);
     /** node clients instantiation */
     if (_nodes.length === 0)
         for (let net in nodes) {
@@ -39,7 +41,7 @@ const nodeRequester = async (user, pass, method, params) => {
     let p_list = _nodes.map(
         client =>
             new Promise(resolve => {
-                client.cmd(method, (err, data) => {
+                client.cmd(cmd, (err, data) => {
                     if (err) return resolve({ result: null, error: err, id: null });
                     resolve({ result: data, error: null, id: null });
                 });

@@ -4,7 +4,6 @@ const express = require("express"),
     bodyParser = require("body-parser"),
     cfg = require("../config/config"),
     c = cfg.color,
-    rest = require("../routes/services"),
     node_proxy = require("../node_interaction/node_rpc_client"),
     env = process.env.NODE_ENV;
 
@@ -26,7 +25,7 @@ function normalizePort(val) {
 /** init express framework */
 const app = express();
 /** configure express app stack */
-app.use(bodyParser.json({ type: "application/*" }))
+app.use(bodyParser.json({ type: "application/json" }))
     .use(bodyParser.urlencoded({ extended: false }))
     .use((req, res, next) => {
         if (env !== "production") {
@@ -42,7 +41,7 @@ app.use(bodyParser.json({ type: "application/*" }))
         let { jsonrpc } = req.body;
         !jsonrpc ? next() : node_proxy.proxy(req, res);
     })
-    .use("/api", rest) // attach API router
+    // .use("/api", require("../routes/services")) // attach API router // not used yet
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler
     .use((err, req, res) => {

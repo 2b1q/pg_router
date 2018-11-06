@@ -2,6 +2,7 @@ const cfg = require("../config/config"),
     { nodes, api_version: API_VERSION, project, color: c } = cfg,
     moment = require("moment"),
     { Client } = require("bitcoin"),
+    { node: auth } = require("../models/auth"), // auth module
     { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
 
 // empty response pattern
@@ -25,52 +26,33 @@ let logit = (req, msg = "") =>
     });
 
 /** common node request wrapper*/
-const nodeRequester = async (user, pass, method, params) => {
-    let _nodes = []; // node client collector
-    let cmd = Object([{ method: method, params: params }]);
-    console.log("cmd: ", cmd);
-    /** node clients instantiation */
-    if (_nodes.length === 0)
-        for (let net in nodes) {
-            let con = nodes[net];
-            con.user = user;
-            con.pass = pass;
-            _nodes.push(new Client(con));
-        }
-    /** Create promise list */
-    let p_list = _nodes.map(
-        client =>
-            new Promise(resolve => {
-                client.cmd(cmd, (err, data) => {
-                    if (err) return resolve({ result: null, error: err, id: null });
-                    resolve({ result: data, error: null, id: null });
-                });
-            })
-    );
-    /** resolve in parallel */
-    return await Promise.all(p_list)
-        .then(data => {
-            console.log(data);
-            return data.map(res => {
-                if (!res.error) return res;
-                //(res.data ? res.data : empty)
+const nodeRequester = (node_type, method, params) =>
+    new Promise(resolve => {
+        let cmd = Object([{ method: method, params: params }]);
+        console.log("cmd: ", cmd);
+        // define node type
+        let con = typeof nodes[node_type] === "object" ? nodes[node_type] : undefined;
+        // construct connection
+        if (con) {
+            // construct node client connection Object
+            let client = new Client(con);
+            client.cmd(cmd, (err, data) => {
+                if (err) return resolve(empty);
+                console.log(`${c.green}[${c.magenta}${node_type}${c.green}] node data: ${c.white}`, data);
+                resolve({ result: data, error: null, id: null });
             });
-        })
-        .catch(err => {
-            console.error(err);
-            return empty;
-        });
-};
+        } else resolve(empty); // no config for this node_type
+    });
 
 // proxy client
-exports.proxy = async (req, res) => {
+exports.proxy = (req, res) => {
     // log req params
     log_api(logit(req));
     let { method, params } = req.body;
     console.log("method: ", method);
     console.log("params: ", params);
 
-    let user, pass;
+    let user, pass, node_type;
     let { authorization } = req.headers;
     if (authorization) {
         let Authorization = authorization.split(" ");
@@ -79,29 +61,24 @@ exports.proxy = async (req, res) => {
             let buff = new Buffer(Authorization[1], "base64");
             let text = buff.toString("ascii");
             let up = text.split(":");
-            user = up[0]; // dispatch user
+            let node_user = up[0].split("_"); // dispatch user and node_type
+            node_type = node_user[0] || "btc";
+            user = node_user[1];
             pass = up[1]; // dispatch pass
         }
     }
-    /** If AUTH Basic user */
-    if (user && pass) {
-        console.log(`${c.green}Get data for user: ${c.magenta}${user}${c.green}, pass: ${c.magenta}${pass}${c.white}`);
-        let response = await nodeRequester(user, pass, method, params);
-        let resp_payload = response.find(data => {
-            if (data !== null) return data;
+    // check node Authorization
+    auth(user, pass, node_type)
+        .then(async () => {
+            console.log(
+                `${c.green}[${c.magenta}${node_type}${c.green}] Get data for user: ${c.magenta}${user}${c.green}, pass: ${
+                    c.magenta
+                }${pass}${c.white}`
+            );
+            res.json(await nodeRequester(node_type, method, params));
+        })
+        .catch(e => {
+            log_err(e);
+            res.status(401).json({});
         });
-        res.json(resp_payload ? resp_payload : empty);
-    } else res.status(401).json({});
-
-    // btc_client.cmd(method, (err, data) => {
-    //     if (err) {
-    //         response = { result: null, error: err, id: null };
-    //         log_err(response);
-    //         res.json(response);
-    //         return console.error("response error", response);
-    //     }
-    //     response = { result: data, error: null, id: null };
-    //     console.log("response", response);
-    //     res.json(response);
-    // });
 };

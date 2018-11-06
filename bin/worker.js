@@ -41,7 +41,7 @@ app.use(bodyParser.json({ type: req => true })) // parse any Content-type as jso
         let { jsonrpc } = req.body;
         !jsonrpc ? next() : node_proxy.proxy(req, res);
     })
-    // .use("/api", require("../routes/services")) // attach API router // not used yet
+    .use("/api", require("../routes/services")) // attach API router
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler
     .use((err, req, res) => {

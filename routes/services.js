@@ -1,6 +1,6 @@
 const router = require("express").Router(),
-    auth_controller = require("../controllers/restricted_zone/v1/auth"),
-    { subscribe, listSubscribe, unSubscribe } = require("../controllers/restricted_zone/v1/gateway");
+    { regUser, logout } = require("../controllers/restricted_zone/v1/auth");
+// { subscribe, listSubscribe, unSubscribe } = require("../controllers/restricted_zone/v1/gateway");
 
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
 
@@ -8,9 +8,11 @@ const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
  * - routing by path
  */
 
-/** SSO Auth/Logout endpoints */
-router.get(v1_ptrn("auth"), auth_controller.auth);
-router.get(v1_ptrn("logout"), auth_controller.logout);
+/** SSO reg/Logout endpoints */
+router.post(v1_ptrn("user"), regUser); // reg new user OR get current JWT (access + refresh) if user exists
+router.get(v1_ptrn("logout"), logout); //  logout user by JWT
+// router.delete(v1_ptrn("user"), deleteUser); //  delete user by JWT
+// router.get(v1_ptrn("refresh"), refreshJWT); // get new JWT pair by refresh JWT
 
 /** Restricted Zone endpoints */
 

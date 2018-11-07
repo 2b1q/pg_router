@@ -110,7 +110,8 @@ const getUser = user =>
             .get()
             .then(db_instance => {
                 if (!db_instance) return reject(); // reject if no db instance empty after reconnect
-                db_instance(user_col)
+                db_instance
+                    .collection(user_col)
                     .findOne({ login: user })
                     .then(userObj => resolve(userObj))
                     .catch(e => {
@@ -118,9 +119,9 @@ const getUser = user =>
                         reject();
                     });
             })
-            .catch(() => {
+            .catch(e => {
                 reject();
-                console.error("connection to MongoDB lost");
+                console.error("connection to MongoDB lost. Error ", e);
             })
     );
 
@@ -131,7 +132,8 @@ const createUser = (user, passHash, services) =>
             .get()
             .then(db_instance => {
                 if (!db_instance) return reject(); // reject if no db instance empty after reconnect
-                db_instance(user_col)
+                db_instance
+                    .collection(user_col)
                     .insertOne({
                         login: user,
                         passHash: passHash,

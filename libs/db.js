@@ -22,7 +22,7 @@ exports.get = () =>
             )
                 .then(client => {
                     db = client.db(dbname);
-                    console.log(`${c.green}[i] connected to MongoDB ${c.white}${uri + dbname}}`);
+                    console.log(`${c.green}[i] connected to MongoDB ${c.white}${uri + dbname}`);
                     resolve(db);
                 })
                 .catch(e => {

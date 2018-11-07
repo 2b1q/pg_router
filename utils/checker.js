@@ -57,9 +57,39 @@ const check_module_singleton = (() => {
         // cut '0x' then remove unexpected chars from hex
         let cut0x_Clean = hash => clean_Hex(cut_0x(hash)).toLowerCase();
 
+        // get user/pass/node_type from req.headers
+        const getCreds = headers => {
+            let { authorization } = headers;
+            let user, pass, node_type;
+            if (authorization) {
+                let Authorization = authorization.split(" ");
+                /** Base64 decoder*/
+                if (Authorization[0] === "Basic") {
+                    let buff = new Buffer(Authorization[1], "base64");
+                    let text = buff.toString("ascii");
+                    let up = text.split(":");
+                    let node_user = up[0].split("_"); // dispatch user and node_type
+                    node_type = node_user[0] || "btc";
+                    user = node_user[1];
+                    pass = up[1]; // dispatch pass
+                    return {
+                        user: user,
+                        pass: pass,
+                        node_type: node_type
+                    };
+                }
+            }
+            return {
+                user: undefined,
+                pass: undefined,
+                node_type: undefined
+            };
+        };
+
         // public interface
         return {
             get_msg: () => msg, // get client msgs object
+            get_creds: headers => getCreds(headers), // get user/pass/node_type from req.headers
             cut0xClean: hash => cut0x_Clean(hash), // cut '0x' then remove unexpected chars from hex
             cut0x: hash => cut_0x(hash), // cut '0x'
             checkHash: chash => check_Hash(chash), // check hash from client request

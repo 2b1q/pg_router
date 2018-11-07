@@ -1,9 +1,9 @@
 const moment = require("moment"),
     { project, api_version: API_VERSION, color: c } = require("../../../config/config"),
-    logger = require("../../../utils/logger")(module),
+    { api_requests: log_api, error: log_err } = require("../../../utils/logger")(module),
     cluster = require("cluster"),
-    jwt = require("../../../models/jwt"),
-    auth = require("../../../models/auth"),
+    // jwt = require("../../../models/jwt"),
+    { newUser } = require("../../../models/auth"),
     check = require("../../../utils/checker").cheker();
 
 // current module
@@ -13,7 +13,7 @@ const wid = cluster.worker.id;
 
 // worker id pattern
 const wid_ptrn = endpoint =>
-    `${c.green}worker[${wid}]${c.red}[JWT]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
+    `${c.green}worker[${wid}]${c.red}[AUTH]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
 
 // simple query logger
 let logit = (req, msg = "") =>
@@ -32,29 +32,34 @@ let logit = (req, msg = "") =>
     });
 
 /** Get Authorization Token */
-const getToken = req => {
-    logger.auth(logit(req)); // log query data any way
-    let { authorization } = req.headers; // Authorization
-    if (!authorization) return check.get_msg().no_jwt; // invalid token
-    return authorization;
-};
+// const getToken = req => {
+//     logger.auth(logit(req)); // log query data any way
+//     let { authorization } = req.headers; // Authorization
+//     if (!authorization) return check.get_msg().no_jwt; // invalid token
+//     return authorization;
+// };
 
 /**
  * Reg new user
  * OR
  * Get current JWT (access + refresh) if user exists
  * */
-exports.regUser = async (req, res) => {
+exports.regUser = (req, res) => {
     console.log(`${wid_ptrn("auth")}`);
-    let token = getToken(req);
-    if (token.hasOwnProperty("errorCode")) return res.status(401).json(token);
-    // check AUTH token
-    try {
-        // res.set('Authorization', 'Bearer ' + jwt_access_token).json(jwt_access_token);
-        res.json({ token: await jwt.verifyTempToken(token) });
-    } catch (e) {
-        res.status(401).json(e);
-    }
+    // log req params
+    log_api(logit(req));
+    // dispatch user creds
+    let { user, pass } = check.get_creds(req.headers);
+    // if not AUTH Basic
+    if (!user) return res.status(401).json({ error: 401, msg: "Bad user. Use AUTH Basic" });
+    console.log(`${c.green}regUser: ${c.magenta}${user}${c.green} with pass ${c.magenta}${pass}${c.white}`);
+    // create new user OR return exist
+    newUser(user, pass)
+        .then(userObject => res.json(userObject))
+        .catch(e => {
+            log_err(e);
+            res.status(401).json(e);
+        });
 };
 
 /**

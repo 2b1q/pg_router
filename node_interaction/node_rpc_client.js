@@ -2,6 +2,7 @@ const cfg = require("../config/config"),
     { nodes, api_version: API_VERSION, project, color: c } = cfg,
     moment = require("moment"),
     { Client } = require("bitcoin"),
+    check = require("../utils/checker").cheker(), // check util singleton
     { node: auth } = require("../models/auth"), // auth module
     { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
 
@@ -49,24 +50,9 @@ exports.proxy = (req, res) => {
     // log req params
     log_api(logit(req));
     let { method, params } = req.body;
-    console.log("method: ", method);
-    console.log("params: ", params);
-
-    let user, pass, node_type;
-    let { authorization } = req.headers;
-    if (authorization) {
-        let Authorization = authorization.split(" ");
-        /** Base64 decoder*/
-        if (Authorization[0] === "Basic") {
-            let buff = new Buffer(Authorization[1], "base64");
-            let text = buff.toString("ascii");
-            let up = text.split(":");
-            let node_user = up[0].split("_"); // dispatch user and node_type
-            node_type = node_user[0] || "btc";
-            user = node_user[1];
-            pass = up[1]; // dispatch pass
-        }
-    }
+    // console.log("method: %s. params: %s", method, params);
+    // dispatch user creds
+    let { user, pass, node_type } = check.get_creds(req.headers);
     // check node Authorization
     auth(user, pass, node_type)
         .then(async () => {

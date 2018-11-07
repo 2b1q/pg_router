@@ -22,7 +22,8 @@ const cols = {
     base: {},
     // user collections
     user: {
-        tokens: "user_tokens" // store user tokens
+        tokens: "user_tokens", // store user tokens
+        users: "users" // store user data
     }
 };
 
@@ -42,22 +43,25 @@ const color = {
 config.staging = {
     jwt: {
         ttl: 3600,
-        secret: ""
+        secret: "123asd789ABCqwt"
     },
+    user_pass_hash_secret: "sup4_Dup4#sEcreD", // user pass hash secret
     nodes: {
         btc: {
-            protocol: "http:",
+            protocol: "http",
             host: "34.217.183.33",
             port: 8332,
             user: "",
-            pass: ""
+            pass: "",
+            timeout: 30000
         },
         ltc: {
-            protocol: "http:",
+            protocol: "http",
             host: "34.219.117.248",
             port: 9332,
             user: "",
-            pass: ""
+            pass: "",
+            timeout: 30000
         }
     },
     services: {
@@ -77,10 +81,11 @@ config.staging = {
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
         mongo: {
-            uri: "mongodb://localhost:26017/", // hardcoded
-            dbname: "payment_gw_router",
+            uri: "mongodb://localhost:27017/", // hardcoded
+            dbname: "payment_gw",
             options: {
                 // autoIndex: false,
+                useNewUrlParser: true,
                 poolSize: 10 // количество подключений в пуле
             }
         },

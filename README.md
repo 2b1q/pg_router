@@ -3,25 +3,30 @@
 - request routing by auth params (node user/pass)
 - transparent node proxying 
 - balancing
-- auth
+- reg/auth
 ### Prerequisites
 PGR requires
 - [Node.js](https://nodejs.org/) v4+ to run.
 - config.js 
-- sso_secret.pub
-### Installation
+- docker
+### Install and Run
 ```sh
 $ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git
 $ cd payment-gateway-router
+$ docker-compose -f stack.yml up -d
 $ npm i -s
 $ npm start
 ```
 ### cURL LTC/BTC request
-Use LTC user/passs to get data from LTC node
-or use BTC user/pass to get data from BTC node
+Use basic cURL json-rpc request to get data from node
+BTC node json-rpc request:
 ```sh
-$ curl 'http://btcUser:btcPass@localhost:3006/' -H 'Content-Type: application/json' --data-binary $'{\n    "jsonrpc": "1.0",\n    "method": "getdifficulty",\n    "params": []\n}'
+$ curl 'http://btc_user:pwd@localhost:3006/' -H 'Content-Type: application/json' --data-binary $'{\n    "jsonrpc": "1.0",\n    "method": "getdifficulty",\n    "params": []\n}'
 {"result":7184404942701.792,"error":null,"id":null}
-$ curl 'http://ltcUser:ltcPass@localhost:3006/' -H 'Content-Type: application/json' --data-binary $'{\n    "jsonrpc": "1.0",\n    "method": "getdifficulty",\n    "params": []\n}' 
+```
+LTC node json-rpc request:
+```sh
+$ curl 'http://ltc_user:pwd@localhost:3006/' -H 'Content-Type: application/json' --data-binary $'{\n    "jsonrpc": "1.0",\n    "method": "getdifficulty",\n    "params": []\n}' 
 {"result":8349684.848687358,"error":null,"id":null}
 ```
+HTTP header 'content-type' could be any -H 'content-type: text/plain;' OR -H 'Content-Type: application/json'

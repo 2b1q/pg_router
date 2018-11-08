@@ -12,6 +12,7 @@ config.js
 config/secret
 config/sso_secret.pub
 package-lock.json
+datastore/
 
 # test results
 result.xml

@@ -8,13 +8,15 @@ services:
     ports:
       - 127.0.0.1:27017:27017
     volumes:
-      - /datastore/pgw_mongo:/data/db
+      - ./datastore:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: toor
 
   mongo-express:
     image: mongo-express
+    links:
+      - mongo
     restart: always
     ports:
       - 127.0.0.1:8081:8081

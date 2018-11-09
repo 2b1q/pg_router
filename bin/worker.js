@@ -27,6 +27,12 @@ const app = express();
 /** configure express app stack */
 app.use(bodyParser.json({ type: req => true })) // parse any Content-type as json
     .use(bodyParser.urlencoded({ extended: false }))
+    // handle JSON parse error
+    .use((err, req, res, next) =>
+        err
+            ? res.status(400).json({ 'error': 'invalid json' })
+            : next()
+    )
     .use((req, res, next) => {
         if (env !== "production") {
             console.log(`${c.green}WORKER[${c.cyan}${wid}${c.green}]${c.white}`);

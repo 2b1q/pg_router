@@ -15,6 +15,21 @@ services:
         MONGO_INITDB_ROOT_USERNAME: root
         MONGO_INITDB_ROOT_PASSWORD: toor
 
+  pgw_node:
+    build: .
+    volumes:
+      - ./pgw_app:/app
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=staging
+    networks:
+      - pgw-net
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
   mongo-express:
     image: mongo-express
     depends_on:

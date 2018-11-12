@@ -81,7 +81,7 @@ config.staging = {
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
         mongo: {
-            uri: "localhost:27017", // hardcoded
+            uri: "mongo:27017", // hardcoded
             dbname: "pgw",
             dbuser: "pgwUser",
             dbpass: "pgwPass",

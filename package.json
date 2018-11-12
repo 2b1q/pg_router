@@ -1,9 +1,11 @@
 {
     "name": "bankex-payment-gateway",
-    "version": "0.0.0",
+    "author": "2b1q",
+    "version": "0.0.1",
+    "license": "ISC",
     "private": true,
     "scripts": {
-        "start": "nodemon ./app.js"
+        "start": "nodemon ./bin/app.js"
     },
     "dependencies": {
         "bitcoin": "^3.0.1",

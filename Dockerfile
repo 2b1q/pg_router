@@ -1,16 +1,15 @@
 FROM node
 
 # Create app directory
-RUN mkdir /app
-WORKDIR /app
+WORKDIR /usr/app
 
 # Install app dependencies
-COPY . /app
-RUN npm install
+COPY package.json ./
+RUN npm install --quiet
 
 # Bundle app source
-#COPY . ./
+COPY . ./
 
-EXPOSE 3006
+#EXPOSE 3006
 
-CMD ["npm", "start"]
+#CMD ["npm", "start"]

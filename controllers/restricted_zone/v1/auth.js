@@ -44,15 +44,20 @@ let logit = (req, msg = "") =>
  * OR
  * Get current JWT (access + refresh) if user exists
  * */
-exports.regUser = (req, res) => {
+exports.regUser = async (req, res) => {
     console.log(`${wid_ptrn("auth")}`);
     // log req params
     log_api(logit(req));
-    // dispatch user creds
-    let { user, pass } = check.get_creds(req.headers);
-    // if not AUTH Basic
-    if (!user) return res.status(401).json({ error: 401, msg: "Bad user. Use AUTH Basic" });
-    console.log(`${c.green}regUser: ${c.magenta}${user}${c.green} with pass ${c.magenta}${pass}${c.white}`);
+    // dispatch user creds sync
+    try {
+        var { user, pass, node_type } = await check.get_creds(req.headers);
+    } catch (e) {
+        log_err(e);
+        return res.status(401).json(e);
+    }
+    console.log(
+        `${c.green}regUser: ${c.magenta}${user}${c.green} pass: ${c.magenta}${pass}${c.green} node_type: ${c.magenta}${node_type}${c.white}`
+    );
     // create new user OR return exist
     newUser(user, pass)
         .then(userObject => res.json(userObject))

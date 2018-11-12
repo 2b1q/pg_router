@@ -8,6 +8,7 @@ const check_module_singleton = (() => {
     let initSingleton = () => {
         // private constants
         const cfg = require("../config/config");
+        const { nodes } = cfg;
         // client msgs
         const msg = {
             not_found: { head: {}, rows: [] }, // API v.2 & API v.1
@@ -58,33 +59,48 @@ const check_module_singleton = (() => {
         let cut0x_Clean = hash => clean_Hex(cut_0x(hash)).toLowerCase();
 
         // get user/pass/node_type from req.headers
-        const getCreds = headers => {
-            let { authorization } = headers;
-            let user, pass, node_type;
-            if (authorization) {
-                let Authorization = authorization.split(" ");
-                /** Base64 decoder*/
-                if (Authorization[0] === "Basic") {
-                    let buff = new Buffer(Authorization[1], "base64");
-                    let text = buff.toString("ascii");
-                    let up = text.split(":");
-                    let node_user = up[0].split("_"); // dispatch user and node_type
-                    node_type = node_user[0] || "btc";
-                    user = node_user[1];
-                    pass = up[1]; // dispatch pass
-                    return {
-                        user: user,
-                        pass: pass,
-                        node_type: node_type
-                    };
+        const getCreds = headers =>
+            new Promise((resolve, reject) => {
+                let err = Object.create(null); // create empty object
+                err = { error: 401, msg: "" }; // set default properties for error
+                let { authorization } = headers;
+                let user, pass, node_type;
+                if (authorization) {
+                    let Authorization = authorization.split(" ");
+                    /** Base64 decoder*/
+                    if (Authorization[0] === "Basic") {
+                        let buff = new Buffer(Authorization[1], "base64");
+                        let text = buff.toString("ascii");
+                        let up = text.split(":");
+                        let node_user = up[0].split("@"); // dispatch user and node_type
+                        node_type = node_user[0];
+                        user = node_user[1];
+                        // check user
+                        if (typeof user === "undefined") {
+                            err.msg = "Bad user name. Use pattern node_type@user_name. E.g. ltc@ninja";
+                            return reject(err);
+                        }
+                        // check node type
+                        if (!Object.keys(nodes).includes(node_type)) {
+                            err.msg = `Bad node type. Available nodes: [${Object.keys(nodes)}]`;
+                            return reject(err);
+                        }
+                        pass = up[1]; // dispatch pass
+                        // check pass
+                        if (typeof pass === "undefined") {
+                            err.msg = "pass not defined";
+                            return reject(err);
+                        }
+                        return resolve({
+                            user: user,
+                            pass: pass,
+                            node_type: node_type
+                        });
+                    }
                 }
-            }
-            return {
-                user: undefined,
-                pass: undefined,
-                node_type: undefined
-            };
-        };
+                err.msg = "Bad AUTH. Use Auth Basic realm";
+                reject(err);
+            });
 
         // public interface
         return {

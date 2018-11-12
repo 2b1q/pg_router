@@ -55,6 +55,12 @@ const wid_ptrn = endpoint =>
  * */
 exports.newUser = (user, pwd) =>
     new Promise(async (resolve, reject) => {
+        var msg_container = Object.create(null); // create unprototyped object container
+        msg_container = {
+            msg: "",
+            error: null
+        };
+
         console.log(wid_ptrn("newUser"));
         // hash the pass from request
         const passHashFromRequest = crypto
@@ -67,24 +73,29 @@ exports.newUser = (user, pwd) =>
             var userObject = await getUser(user);
         } catch (e) {
             log_err(e);
-            return reject({ error: 500, msg: "Error on getUser" });
+            msg_container.error = 500;
+            msg_container.msg = "Error on getUser";
+            return reject(msg_container);
         }
+        console.log("userObject, ", userObject);
         // destruct login and passHash
         let { passHash: passHashFromDB, login, services: user_services } = userObject;
         // if user not exists => create One
         if (!login) {
             // store user, hash and services
             createUser(user, passHashFromRequest, Object.keys(nodes))
-                .then(({ services, login }) =>
-                    resolve({
-                        msg: "new user created successfully",
-                        reg_services: services,
-                        logins: services.map(service => service + "_" + login)
-                    })
-                )
+                .then(({ services, login }) => {
+                    msg_container.msg = "new user created successfully";
+                    msg_container.reg_services = services;
+                    msg_container.logins = services.map(service => service + "_" + login);
+                    console.log(msg_container);
+                    return resolve(msg_container);
+                })
                 .catch(e => {
                     log_err(e);
-                    return reject({ error: 500, msg: "Error on createUser" });
+                    msg_container.error = 500;
+                    msg_container.msg = "Error on createUser";
+                    return reject(msg_container);
                 });
         }
         // compare hash (check hash)
@@ -94,11 +105,10 @@ exports.newUser = (user, pwd) =>
          ${c.green}passHashFromDB: ${c.magenta}${passHashFromDB}
          ${c.green}isEqual: ${c.magenta}${passHashFromRequest === passHashFromDB}${c.white}`);
             if (passHashFromRequest === passHashFromDB) {
-                return resolve({
-                    msg: "user already exists",
-                    reg_services: user_services,
-                    logins: user_services.map(service => service + "_" + user)
-                });
+                msg_container.msg = "user already exists";
+                msg_container.reg_services = user_services;
+                msg_container.logins = user_services.map(service => service + "_" + user);
+                return resolve(msg_container);
             }
         }
     });
@@ -113,7 +123,7 @@ const getUser = user =>
                 db_instance
                     .collection(user_col)
                     .findOne({ login: user })
-                    .then(userObj => resolve(userObj))
+                    .then(userObj => resolve(userObj ? userObj : {}))
                     .catch(e => {
                         console.error("Mongo error on getUser: ", e);
                         reject();
@@ -140,13 +150,12 @@ const createUser = (user, passHash, services) =>
                         services: services
                     })
                     // get userObj
-                    .then(
-                        () =>
-                            console.log(`${c.green}New user ${c.magenta}${user}${c.green} successfully inserted${c.white}`) &&
-                            getUser(user)
-                                .then(userObj => resolve(userObj))
-                                .catch(() => reject())
-                    )
+                    .then(() => {
+                        console.log(`${c.green}New user ${c.magenta}${user}${c.green} successfully inserted${c.white}`);
+                        return getUser(user)
+                            .then(userObj => resolve(userObj))
+                            .catch(() => reject());
+                    })
                     .catch(e => {
                         console.error("Mongo error on getUser: ", e);
                         reject();

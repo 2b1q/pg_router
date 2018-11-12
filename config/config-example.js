@@ -81,12 +81,14 @@ config.staging = {
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
         mongo: {
-            uri: "mongodb://localhost:27017/", // hardcoded
-            dbname: "payment_gw",
+            uri: "localhost:27017", // hardcoded
+            dbname: "pgw",
+            dbuser: "pgwUser",
+            dbpass: "pgwPass",
             options: {
                 // autoIndex: false,
-                useNewUrlParser: true,
-                poolSize: 10 // количество подключений в пуле
+                useNewUrlParser: true
+                // poolSize: 10 // количество подключений в пуле
             }
         },
         cols: cols.base,

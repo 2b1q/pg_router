@@ -3,6 +3,7 @@ services:
 
   mongo:
     image: mongo:latest
+    container_name: pgw_mongo
     restart: always
     volumes:
       - db-data:/data/db

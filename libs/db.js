@@ -2,8 +2,9 @@ const MongoClient = require("mongodb").MongoClient,
     cfg = require("../config/config");
 
 let db = null, // reference to db
-    { uri, dbname, options } = cfg.store.mongo,
+    { uri, dbname, options, dbpass, dbuser } = cfg.store.mongo,
     c = cfg.color;
+let dsn = `mongodb://${dbuser}:${dbpass}@${uri}/${dbname}`;
 
 /** get DB instance Promise */
 exports.get = () =>
@@ -17,7 +18,7 @@ exports.get = () =>
                 });
         } else {
             MongoClient.connect(
-                uri,
+                dsn,
                 options
             )
                 .then(client => {

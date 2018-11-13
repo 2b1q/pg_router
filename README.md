@@ -9,6 +9,8 @@ PGR requires
 - [Node.js](https://nodejs.org/) v4+ to run.
 - config.js 
 - docker
+### Usage
+![](pgw.gif)
 ### Install and Run
 ```sh
 $ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git

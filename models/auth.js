@@ -55,13 +55,12 @@ const wid_ptrn = endpoint =>
  * */
 exports.newUser = (user, pwd) =>
     new Promise(async (resolve, reject) => {
+        console.log(wid_ptrn("newUser"));
         var msg_container = Object.create(null); // create unprototyped object container
         msg_container = {
             msg: "",
             error: null
         };
-
-        console.log(wid_ptrn("newUser"));
         // hash the pass from request
         const passHashFromRequest = crypto
             .createHmac("sha256", secret)
@@ -169,11 +168,36 @@ const createUser = (user, passHash, services) =>
 
 /** Check json-rpc node client AUTH */
 exports.node = (user, pass, node_type) =>
-    new Promise((resolve, reject) => {
-        // check user in DB
-        db.get().then(() => {});
-        if (user && pass && node_type) return resolve();
-        else return reject();
+    new Promise(async (resolve, reject) => {
+        console.log(wid_ptrn("check user => json-rpc node proxy request"));
+        var msg_container = Object.create(null); // create unprototyped object container
+        msg_container = {
+            msg: "",
+            error: null
+        };
+        // hash the pass from request
+        const passHashFromRequest = crypto
+            .createHmac("sha256", secret)
+            .update(pass)
+            .digest("hex");
+        // check if user already exists
+        try {
+            // getUser object
+            var userObject = await getUser(user);
+        } catch (e) {
+            log_err(e);
+            msg_container.error = 500;
+            msg_container.msg = "Error on getUser";
+            return reject(msg_container);
+        }
+        console.log("userObject, ", userObject);
+        // destruct login and passHash
+        let { passHash: passHashFromDB } = userObject;
+        // compare hashes
+        if (passHashFromDB === passHashFromRequest) return resolve(msg_container);
+        msg_container.error = 401;
+        msg_container.msg = "Error. Not Authorized";
+        return reject(msg_container);
     });
 
 /** Check adapter client by JWT */

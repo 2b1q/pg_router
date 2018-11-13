@@ -46,13 +46,23 @@ const nodeRequester = (node_type, method, params) =>
     });
 
 // proxy client
-exports.proxy = (req, res) => {
+exports.proxy = async (req, res) => {
     // log req params
     log_api(logit(req));
     let { method, params } = req.body;
     // console.log("method: %s. params: %s", method, params);
-    // dispatch user creds
-    let { user, pass, node_type } = check.get_creds(req.headers);
+    // dispatch user creds sync
+    try {
+        var { user, pass, node_type } = await check.get_creds(req.headers);
+    } catch (e) {
+        log_err(e);
+        return res.status(401).json(e);
+    }
+    console.log(
+        `${c.green}AUTH check for JSON-RPC node User: ${c.magenta}${user}${c.green} pass: ${c.magenta}${pass}${c.green} node_type: ${
+            c.magenta
+        }${node_type}${c.white}`
+    );
     // check node Authorization
     auth(user, pass, node_type)
         .then(async () => {

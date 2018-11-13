@@ -1,50 +1,51 @@
-version: '3'
+version: "3"
 services:
+    pgw_node:
+        build: .
+        command: npm start
+        ports:
+            - "3006:3006"
+        depends_on:
+            - mongo
+        environment:
+            - NODE_ENV=dev
+            - dbname=pgw_dev
+            - dbuser=pgwUser
+            - dbpass=pgwPass
+        networks:
+            - pgw-net
+        links:
+            - mongo
 
-  pgw_node:
-    build: .
-    command: npm start
-    ports:
-     - "3006:3006"
-    depends_on:
-     - mongo
-    environment:
-     - NODE_ENV=staging
-    networks:
-     - pgw-net
-    links:
-     - mongo
+    mongo:
+        image: mongo:latest
+        container_name: pgw_mongo
+        restart: always
+        volumes:
+            - db-data:/data/db
+        networks:
+            - pgw-net
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: toor
 
-  mongo:
-    image: mongo:latest
-    container_name: pgw_mongo
-    restart: always
-    volumes:
-      - db-data:/data/db
-    networks:
-        - pgw-net
-    ports:
-        - "27017:27017"
-    environment:
-        MONGO_INITDB_ROOT_USERNAME: root
-        MONGO_INITDB_ROOT_PASSWORD: toor
-
-  mongo-express:
-    image: mongo-express
-    depends_on:
-        - mongo
-    networks:
-        - pgw-net
-    restart: always
-    ports:
-        - "8081:8081"
-    environment:
-        ME_CONFIG_MONGODB_ADMINUSERNAME: root
-        ME_CONFIG_MONGODB_ADMINPASSWORD: toor
-
+    mongo-express:
+        image: mongo-express
+        depends_on:
+            - mongo
+        networks:
+            - pgw-net
+        restart: always
+        ports:
+            - "8081:8081"
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: toor
 
 networks:
-    pgw-net:
+    - pgw-net
 
 volumes:
-    db-data:
+    - db-data

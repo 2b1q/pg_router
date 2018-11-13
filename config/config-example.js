@@ -81,7 +81,7 @@ config.staging = {
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
         mongo: {
-            uri: "mongo:27017", // hardcoded
+            uri: "127.0.0.1:27017", // hardcoded
             dbname: "pgw",
             dbuser: "pgwUser",
             dbpass: "pgwPass",
@@ -103,7 +103,62 @@ config.production = {};
 /** END OF Production environment */
 
 /** Dev environment */
-config.dev = {};
+config.dev = {
+    jwt: {
+        ttl: 3600,
+        secret: "123asd789ABCqwt"
+    },
+    user_pass_hash_secret: "sup4_Dup4#sEcreD", // user pass hash secret
+    nodes: {
+        btc: {
+            protocol: "http",
+            host: "34.217.183.33",
+            port: 8332,
+            user: "btcAdapter",
+            pass: "AdapterBTC",
+            timeout: 30000
+        },
+        ltc: {
+            protocol: "http",
+            host: "34.219.117.248",
+            port: 9332,
+            user: "litecoin",
+            pass: "litecoin",
+            timeout: 30000
+        }
+    },
+    services: {
+        btc_rates: { protocol: "http:", host: "137.117.110.27", port: 8100 },
+        btc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8101 },
+        ltc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8102 },
+        profile_listener: { protocol: "http:", host: "137.117.110.27", port: 8103 }
+    },
+    api_version: api_version,
+    errors: errors,
+    project: project,
+    /** ============= NEED TO BE SPECIFIED ============= */
+    server: {
+        port: 3006,
+        ip: "0.0.0.0"
+    },
+    /** ============= NEED TO BE SPECIFIED ============= */
+    store: {
+        mongo: {
+            uri: "mongo:27017", // hardcoded
+            dbname: process.env.dbname || "pgw_dev",
+            dbuser: process.env.dbuser || "pgwUser",
+            dbpass: process.env.dbpass || "pgwPass",
+            options: {
+                // autoIndex: false,
+                useNewUrlParser: true
+                // poolSize: 10 // количество подключений в пуле
+            }
+        },
+        cols: cols.base,
+        user: cols.user
+    },
+    color: color
+};
 /** END OF Dev environment */
 
 // Determine passed ENV

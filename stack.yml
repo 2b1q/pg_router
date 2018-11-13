@@ -45,7 +45,7 @@ services:
             ME_CONFIG_MONGODB_ADMINPASSWORD: toor
 
 networks:
-    - pgw-net
+    ? pgw-net
 
 volumes:
-    - db-data
+    ? db-data

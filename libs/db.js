@@ -50,10 +50,10 @@ if (!db) {
                 let pgwdb = client.db(dbname);
                 addUser(pgwdb)
                     .then(() => {})
-                    .catch(e => console.error(e));
+                    .catch(({ errmsg }) => console.error(errmsg));
                 client.close(); // Close the connection
             })
-            .catch(e => console.error(`${c.red}[E] DB user create Failed. ${c.white}`, e));
+            .catch(e => console.error(`${c.red}[E] DB user create Failed. ${c.white}`, e.errmsg));
     });
 }
 

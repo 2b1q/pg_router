@@ -106,7 +106,7 @@ exports.newUser = (user, pwd) =>
             if (passHashFromRequest === passHashFromDB) {
                 msg_container.msg = "user already exists";
                 msg_container.reg_services = user_services;
-                msg_container.logins = user_services.map(service => service + "_" + user);
+                msg_container.logins = user_services.map(service => service + "@" + user);
                 return resolve(msg_container);
             }
         }

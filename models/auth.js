@@ -86,7 +86,7 @@ exports.newUser = (user, pwd) =>
                 .then(({ services, login }) => {
                     msg_container.msg = "new user created successfully";
                     msg_container.reg_services = services;
-                    msg_container.logins = services.map(service => service + "_" + login);
+                    msg_container.logins = services.map(service => service + "@" + login);
                     console.log(msg_container);
                     return resolve(msg_container);
                 })

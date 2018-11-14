@@ -109,6 +109,9 @@ exports.newUser = (user, pwd) =>
                 msg_container.logins = user_services.map(service => service + "@" + user);
                 return resolve(msg_container);
             }
+            msg_container.error = 401;
+            msg_container.msg = "Error bad password";
+            return reject(msg_container);
         }
     });
 

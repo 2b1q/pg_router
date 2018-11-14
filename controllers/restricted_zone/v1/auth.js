@@ -50,14 +50,12 @@ exports.regUser = async (req, res) => {
     log_api(logit(req));
     // dispatch user creds sync
     try {
-        var { user, pass, node_type } = await check.get_creds(req.headers);
+        var { user, pass } = await check.get_creds(req.headers, { reg: true });
     } catch (e) {
         log_err(e);
         return res.status(401).json(e);
     }
-    console.log(
-        `${c.green}regUser: ${c.magenta}${user}${c.green} pass: ${c.magenta}${pass}${c.green} node_type: ${c.magenta}${node_type}${c.white}`
-    );
+    console.log(`${c.green}regUser: ${c.magenta}${user}${c.green} pass: ${c.magenta}${pass}${c.green}${c.white}`);
     // create new user OR return exist
     newUser(user, pass)
         .then(userObject => res.json(userObject))

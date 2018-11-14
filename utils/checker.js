@@ -59,10 +59,10 @@ const check_module_singleton = (() => {
         let cut0x_Clean = hash => clean_Hex(cut_0x(hash)).toLowerCase();
 
         // get user/pass/node_type from req.headers
-        const getCreds = headers =>
+        const getCreds = (headers, { reg }) =>
             new Promise((resolve, reject) => {
                 let err = Object.create(null); // create empty object
-                err = { error: 401, msg: "" }; // set default properties for error
+                err = { error: 401, msg: null }; // set default properties for error
                 let { authorization } = headers;
                 let user, pass, node_type;
                 if (authorization) {
@@ -72,6 +72,18 @@ const check_module_singleton = (() => {
                         let buff = new Buffer(Authorization[1], "base64");
                         let text = buff.toString("ascii");
                         let up = text.split(":");
+                        // check if new user
+                        if (reg) {
+                            let new_user = up[0],
+                                new_pwd = up[1];
+                            if (!new_user) err.msg = "Bad user name";
+                            if (!new_pwd) err.msg = "Bad password";
+                            if (err.msg) return reject(err);
+                            return resolve({
+                                user: new_user,
+                                pass: new_pwd
+                            });
+                        }
                         let node_user = up[0].split("@"); // dispatch user and node_type
                         node_type = node_user[0];
                         user = node_user[1];
@@ -105,7 +117,7 @@ const check_module_singleton = (() => {
         // public interface
         return {
             get_msg: () => msg, // get client msgs object
-            get_creds: headers => getCreds(headers), // get user/pass/node_type from req.headers
+            get_creds: (headers, reg) => getCreds(headers, reg), // get user/pass/node_type from req.headers
             cut0xClean: hash => cut0x_Clean(hash), // cut '0x' then remove unexpected chars from hex
             cut0x: hash => cut_0x(hash), // cut '0x'
             checkHash: chash => check_Hash(chash), // check hash from client request

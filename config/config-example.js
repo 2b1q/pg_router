@@ -114,16 +114,16 @@ config.dev = {
             protocol: "http",
             host: "34.217.183.33",
             port: 8332,
-            user: "btcAdapter",
-            pass: "AdapterBTC",
+            user: "",
+            pass: "",
             timeout: 30000
         },
         ltc: {
             protocol: "http",
             host: "34.219.117.248",
             port: 9332,
-            user: "litecoin",
-            pass: "litecoin",
+            user: "",
+            pass: "",
             timeout: 30000
         }
     },

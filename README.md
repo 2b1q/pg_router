@@ -13,12 +13,22 @@
     - [REST API] Service request authentication
     - [JSON-RPC] Node request authentication
 ### PGR components
+- pgr_stack
+    - pgw_node (payment gateway node.js router)
+    - pgw_mongo (pgw data store)
+    - pgw_mongo-express (pgw UI db management console)
+- nodes
+    - BTC
+    - LTC
+- services
+    - btc_rates
+    - btc_adapter
+    - ltc_adapter
+    - profile_listener
 ### PGR Prerequisites
 - [Node.js](https://nodejs.org/) v8+ to run.
 - config.js 
 - docker
-### Usage
-![](pgw.gif)
 ### Install and Run PGR
 1. `cp config-example.js config.js`
 2. edit config.js (setup env properties)
@@ -28,14 +38,14 @@ $ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git
 $ cd payment-gateway-router
 $ docker-compose -f stack.yml up -d
 ```
-### new PGW user REST request
-Lets create a new PGW user
+## Usage
+### new PGR user REST request
+Lets create a new PGR user
 ```sh
 $ curl -s 'http://localhost:3006/api/v1/user' -X POST -H "Content-Type:application/json" --user myNewUser:myNewPassword -d '{}'
 {"msg":"new user created successfully","error":null,"reg_services":["btc","ltc"],"logins":["btc@myNewUser","ltc@myNewUser"]}
 ```
-Ok!
-Lets try with **BTC**
+Ok! Lets try with **BTC**
 ```sh
 $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "getdifficulty",\n "params": []\n}' --user btc@myNewUser:myNewPassword |jq 
 {
@@ -68,3 +78,5 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
 {"result":7184404942701.792,"error":null,"id":null} 
 ```
 HTTP header 'content-type' could be any -H 'content-type: text/plain;' OR -H 'Content-Type: application/json'
+### Demo
+![](pgw.gif)

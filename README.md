@@ -30,7 +30,29 @@ $ docker-compose -f stack.yml up -d
 ```
 ### new PGW user REST request
 Lets create a new PGW user
- 
+```sh
+$ curl -s 'http://localhost:3006/api/v1/user' -X POST -H "Content-Type:application/json" --user myNewUser:myNewPassword -d '{}'
+{"msg":"new user created successfully","error":null,"reg_services":["btc","ltc"],"logins":["btc@myNewUser","ltc@myNewUser"]}
+```
+Ok!
+Lets try with **BTC**
+```sh
+$ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "getdifficulty",\n "params": []\n}' --user btc@myNewUser:myNewPassword |jq 
+{
+  "result": 7184404942701.792,
+  "error": null,
+  "id": null
+}
+```
+Lets try with **LTC**
+```sh
+$ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "getdifficulty",\n "params": []\n}' --user ltc@myNewUser:myNewPassword |jq 
+{
+  "result": 8068443.399989726,
+  "error": null,
+  "id": null
+}
+```
 ### LTC/BTC JSON-RPC request
 Use basic cURL json-rpc request to get data from node
 node json-rpc request pattern:

@@ -53,7 +53,7 @@ exports.proxy = async (req, res) => {
     // console.log("method: %s. params: %s", method, params);
     // dispatch user creds sync
     try {
-        var { user, pass, node_type } = await check.get_creds(req.headers, { reg: false });
+        var { user, pass, node_type } = await check.get_creds(req.headers, { rpc: true });
     } catch (e) {
         log_err(e);
         return res.status(401).json(e);

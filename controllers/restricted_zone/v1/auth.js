@@ -50,7 +50,7 @@ exports.regUser = async (req, res) => {
     log_api(logit(req));
     // dispatch user creds sync
     try {
-        var { user, pass } = await check.get_creds(req.headers, { reg: true });
+        var { user, pass } = await check.get_creds(req.headers, { rpc: false });
     } catch (e) {
         log_err(e);
         return res.status(401).json(e);

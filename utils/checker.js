@@ -59,8 +59,9 @@ const check_module_singleton = (() => {
         let cut0x_Clean = hash => clean_Hex(cut_0x(hash)).toLowerCase();
 
         // get user/pass/node_type from req.headers
-        const getCreds = (headers, { reg }) =>
+        const getCreds = (headers, { rpc }) =>
             new Promise((resolve, reject) => {
+                console.log("rpc", rpc);
                 let err = Object.create(null); // create empty object
                 err = { error: 401, msg: null }; // set default properties for error
                 let { authorization } = headers;
@@ -72,8 +73,8 @@ const check_module_singleton = (() => {
                         let buff = new Buffer(Authorization[1], "base64");
                         let text = buff.toString("ascii");
                         let up = text.split(":");
-                        // check if new user
-                        if (reg) {
+                        // check if not RPC user
+                        if (!rpc) {
                             let new_user = up[0],
                                 new_pwd = up[1];
                             if (!new_user) err.msg = "Bad user name";
@@ -117,7 +118,7 @@ const check_module_singleton = (() => {
         // public interface
         return {
             get_msg: () => msg, // get client msgs object
-            get_creds: (headers, reg) => getCreds(headers, reg), // get user/pass/node_type from req.headers
+            get_creds: (headers, rpc) => getCreds(headers, rpc), // get user/pass/node_type from req.headers
             cut0xClean: hash => cut0x_Clean(hash), // cut '0x' then remove unexpected chars from hex
             cut0x: hash => cut_0x(hash), // cut '0x'
             checkHash: chash => check_Hash(chash), // check hash from client request

@@ -6,6 +6,25 @@
 // Config container
 const config = {};
 
+// endPoints polymorphic curry function object instantiation
+const service = type => {
+    let names = {
+        btc_rates: {
+            host: "137.117.110.27",
+            port: 8100,
+            currencies: ["BTC", "LTC", "ETH", "BKX", "USD"],
+            endpoints: {
+                rates: "api/v1/rates"
+            }
+        },
+        btc_adapter: { host: "137.117.110.27", port: 8101 },
+        ltc_adapter: { host: "137.117.110.27", port: 8102 }
+    };
+    // check if passed service name  exists
+    let service = typeof names[type] == "undefined" ? undefined : names[type];
+    return method => (typeof service == "undefined" ? "" : `http://${service.host}:${service.port}/${service.endpoints.rates}${method}`);
+};
+
 /** Common config for all ENV */
 const api_version = "v. 1.0",
     project = "BANKEX Payment-gateway-router",
@@ -64,12 +83,9 @@ config.staging = {
             timeout: 30000
         }
     },
-    services: {
-        btc_rates: { protocol: "http:", host: "137.117.110.27", port: 8100 },
-        btc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8101 },
-        ltc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8102 },
-        profile_listener: { protocol: "http:", host: "137.117.110.27", port: 8103 }
-    },
+    btc_rates: service("btc_rates"),
+    btc_adapter: service("btc_adapter"),
+    ltc_adapter: service("ltc_adapter"),
     api_version: api_version,
     errors: errors,
     project: project,
@@ -127,12 +143,9 @@ config.dev = {
             timeout: 30000
         }
     },
-    services: {
-        btc_rates: { protocol: "http:", host: "137.117.110.27", port: 8100 },
-        btc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8101 },
-        ltc_adapter: { protocol: "http:", host: "137.117.110.27", port: 8102 },
-        profile_listener: { protocol: "http:", host: "137.117.110.27", port: 8103 }
-    },
+    btc_rates: service("btc_rates"),
+    btc_adapter: service("btc_adapter"),
+    ltc_adapter: service("ltc_adapter"),
     api_version: api_version,
     errors: errors,
     project: project,

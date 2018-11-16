@@ -9,6 +9,12 @@ const express = require("express"),
 
 // get cluster worker ID
 let wid = cluster.worker.id;
+// if (wid === 1) {
+//     console.log("WID: ", wid);
+//     let { btc_rates } = cfg.services;
+//     console.log("btc_rates from LTC", btc_rates("/all?from=LTC"));
+//     console.log("btc_rates from LTC to BTC", btc_rates("?from=BTC&to=LTC"));
+// }
 
 /**
  * Setup Node HTTP server
@@ -28,11 +34,7 @@ const app = express();
 app.use(bodyParser.json({ type: req => true })) // parse any Content-type as json
     .use(bodyParser.urlencoded({ extended: false }))
     // handle JSON parse error
-    .use((err, req, res, next) =>
-        err
-            ? res.status(400).json({ 'error': 'invalid json' })
-            : next()
-    )
+    .use((err, req, res, next) => (err ? res.status(400).json({ error: "invalid json" }) : next()))
     .use((req, res, next) => {
         if (env !== "production") {
             console.log(`${c.green}WORKER[${c.cyan}${wid}${c.green}]${c.white}`);

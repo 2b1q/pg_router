@@ -1,15 +1,28 @@
-const app = require("express"),
-    router = app.Router(),
+const router = require("express").Router(),
+    { color: c } = require("../config/config"),
     { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth");
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
+const v1_auth_ptrn = (service, path) => v1_ptrn(`${service}/${path}`); // v. 1 restricted pattern
 /** Restricted Zone endpoints */
-// restricted routes stack IIFE
-const restricted_routes = (() => ["btc", "ltc"].map(route => v1_ptrn(route)))();
+const services = ["ltc", "btc"]; // restricted services
+// restricted zone routes stack IIFE
+const restricted_zone = (() => ["address", "block", "account"].map(route => services.map(service => v1_auth_ptrn(service, route))))();
 // AUTH middleware
-router.get(restricted_routes, (req, res) => {
-    console.log("Restricted routes STACK ACTIVATED");
+router.get(restricted_zone, (req, res) => {
+    console.log(c.yellow, "Restricted routes STACK ACTIVATED\n", c.cyan, restricted_zone, c.white);
+    let service = req.url.split("/");
+    let adapter = service[2];
+    let endpoint = service[3];
+    console.log(
+        c.magenta,
+        {
+            adapter: adapter,
+            endpoint: endpoint
+        },
+        c.white
+    );
     checkAuth(req)
         .then(() => res.json({ msg: "authorized" }))
         .catch(msg => res.status(401).json(msg));

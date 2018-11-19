@@ -1,7 +1,8 @@
 /*
  * service adapter proxy
  * */
-const cluster = require("cluster"), // access to cluster.worker.id
+const service_request = require("request"), // HTTP client
+    cluster = require("cluster"), // access to cluster.worker.id
     cfg = require("../config/config"),
     c = cfg.color;
 

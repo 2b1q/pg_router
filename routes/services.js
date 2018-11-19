@@ -1,30 +1,37 @@
 const router = require("express").Router(),
-    { color: c } = require("../config/config"),
+    { color: c, restricted_endpoints, restricted_services } = require("../config/config"),
     { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth");
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
-const v1_auth_ptrn = (service, path) => v1_ptrn(`${service}/${path}`); // v. 1 restricted pattern
+const v1_auth_fix_ptrn = (service, path) => v1_ptrn(`${service}/${path}`); // v. 1 restricted pattern
+const v1_auth_regexp_ptrn = service => new RegExp("(/v1/" + service + "/)"); // v. 1 restricted ReExp pattern
 /** Restricted Zone endpoints */
-const services = ["ltc", "btc"]; // restricted services
-// restricted zone routes stack IIFE
-const restricted_zone = (() => ["address", "block", "account"].map(route => services.map(service => v1_auth_ptrn(service, route))))();
+
+// restricted zone fixed routes stack IIFE (restricted_services + restricted_endpoints)
+const restricted_zone = ((re, rs) => re.map(route => rs.map(service => v1_auth_fix_ptrn(service, route))))(
+    restricted_endpoints,
+    restricted_services
+);
+// restricted_services stack IIFE (restricted_services) regexp
+const restricted_regexp = (rs => v1_auth_regexp_ptrn(rs.map(service => `${service}`).join("/)|(/v1/")))(restricted_services);
+console.log("restricted_regexp ", restricted_regexp);
 // AUTH middleware
-router.get(restricted_zone, (req, res) => {
-    console.log(c.yellow, "Restricted routes STACK ACTIVATED\n", c.cyan, restricted_zone, c.white);
-    let service = req.url.split("/");
+router.get(restricted_regexp, (req, res) => {
+    console.log(c.yellow, "Handle restricted route =>", c.cyan, req.path, c.white);
+    console.log("req.url => ", req.url);
+    let service = req.path.split("/");
     let adapter = service[2];
-    let endpoint = service[3];
-    console.log(
-        c.magenta,
-        {
-            adapter: adapter,
-            endpoint: endpoint
-        },
-        c.white
-    );
+    let endpoint = typeof service[4] === "undefined" ? service[3] : service[3] + "/" + service[4];
+    let params = req.query;
+    service = {
+        adapter: adapter,
+        endpoint: endpoint,
+        parameters: params
+    };
+    console.log(c.yellow, "service to proxy:", c.magenta, service, c.white);
     checkAuth(req)
-        .then(() => res.json({ msg: "authorized" }))
+        .then(() => res.json({ msg: "authorized", service }))
         .catch(msg => res.status(401).json(msg));
 });
 

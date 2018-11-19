@@ -83,9 +83,23 @@ config.staging = {
             timeout: 30000
         }
     },
-    btc_rates: service("btc_rates"),
-    btc_adapter: service("btc_adapter"),
-    ltc_adapter: service("ltc_adapter"),
+    services: {
+        btc_rates: service("btc_rates"),
+        btc_adapter: service("btc_adapter"),
+        ltc_adapter: service("ltc_adapter")
+    },
+    restricted_endpoints: [
+        "address",
+        "address/all",
+        "address/new",
+        "block",
+        "block/hash",
+        "rates",
+        "rates/all",
+        "account/new",
+        "account/balance"
+    ],
+    restricted_services: ["ltc", "btc"], // restricted services
     api_version: api_version,
     errors: errors,
     project: project,
@@ -143,9 +157,23 @@ config.dev = {
             timeout: 30000
         }
     },
-    btc_rates: service("btc_rates"),
-    btc_adapter: service("btc_adapter"),
-    ltc_adapter: service("ltc_adapter"),
+    services: {
+        btc_rates: service("btc_rates"),
+        btc_adapter: service("btc_adapter"),
+        ltc_adapter: service("ltc_adapter")
+    },
+    restricted_endpoints: [
+        "address",
+        "address/all",
+        "address/new",
+        "block",
+        "block/hash",
+        "rates",
+        "rates/all",
+        "account/new",
+        "account/balance"
+    ],
+    restricted_services: ["ltc", "btc"], // restricted services
     api_version: api_version,
     errors: errors,
     project: project,

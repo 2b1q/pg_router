@@ -171,10 +171,14 @@ const createUser = (user, passHash, services) =>
             })
     );
 
-/** Check json-rpc node client AUTH */
-exports.node = (user, pass, node_type) =>
+/**
+ * Check client AUTH
+ * - check AUTH JSON-RPC request
+ * - check AUTH REST-API request
+ * */
+exports.checkAuth = (user, pass) =>
     new Promise(async (resolve, reject) => {
-        console.log(wid_ptrn("check user => json-rpc node proxy request"));
+        console.log(wid_ptrn("common check user => AUTH request"));
         var msg_container = Object.create(null); // create unprototyped object container
         msg_container = {
             msg: "",
@@ -195,13 +199,16 @@ exports.node = (user, pass, node_type) =>
             msg_container.msg = "Error on getUser";
             return reject(msg_container);
         }
-        console.log("userObject, ", userObject);
         // destruct login and passHash
         let { passHash: passHashFromDB } = userObject;
         // compare hashes
-        if (passHashFromDB === passHashFromRequest) return resolve(msg_container);
+        if (passHashFromDB === passHashFromRequest) {
+            console.log(c.yellow, "Authorized\n", c.white, userObject);
+            return resolve(msg_container);
+        }
         msg_container.error = 401;
         msg_container.msg = "Error. Not Authorized";
+        console.error("Not Authorized => passHash invalid\n", c.white, userObject);
         return reject(msg_container);
     });
 

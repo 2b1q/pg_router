@@ -1,9 +1,12 @@
+/*
+* Node RPC proxy client
+* */
 const cfg = require("../config/config"),
     { nodes, api_version: API_VERSION, project, color: c } = cfg,
     moment = require("moment"),
     { Client } = require("bitcoin"),
     check = require("../utils/checker").cheker(), // check util singleton
-    { node: auth } = require("../models/auth"), // auth module
+    { checkAuth } = require("../models/auth"), // auth module
     { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
 
 // empty response pattern
@@ -26,7 +29,10 @@ let logit = (req, msg = "") =>
             .join("/")
     });
 
-/** common node request wrapper*/
+/**
+ * common node request wrapper
+ * JSON-RPC node proxy client
+ * */
 const nodeRequester = (node_type, method, params) =>
     new Promise(resolve => {
         let cmd = Object([{ method: method, params: params }]);
@@ -45,7 +51,11 @@ const nodeRequester = (node_type, method, params) =>
         } else resolve(empty); // no config for this node_type
     });
 
-// proxy client
+/*
+* JSON-RPC node proxy client (controller)
+* 1. check AUTH
+* 2. nodeRequester
+* */
 exports.proxy = async (req, res) => {
     // log req params
     log_api(logit(req));
@@ -64,7 +74,7 @@ exports.proxy = async (req, res) => {
         }${node_type}${c.white}`
     );
     // check node Authorization
-    auth(user, pass, node_type)
+    checkAuth(user, pass, node_type)
         .then(async () => {
             console.log(
                 `${c.green}[${c.magenta}${node_type}${c.green}] Get data for user: ${c.magenta}${user}${c.green}, pass: ${

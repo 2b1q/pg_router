@@ -5,15 +5,14 @@ const router = require("express").Router(),
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
 const v1_auth_fix_ptrn = (service, path) => v1_ptrn(`${service}/${path}`); // v. 1 restricted pattern
-const v1_auth_regexp_ptrn = service => new RegExp("(/v1/" + service + "/)"); // v. 1 restricted ReExp pattern
 /** Restricted Zone endpoints */
-
 // restricted zone fixed routes stack IIFE (restricted_services + restricted_endpoints)
 const restricted_zone = ((re, rs) => re.map(route => rs.map(service => v1_auth_fix_ptrn(service, route))))(
     restricted_endpoints,
     restricted_services
 );
 // restricted_services stack IIFE (restricted_services) regexp
+const v1_auth_regexp_ptrn = service => new RegExp("(/v1/" + service + "/)"); // v. 1 restricted ReExp pattern
 const restricted_regexp = (rs => v1_auth_regexp_ptrn(rs.map(service => `${service}`).join("/)|(/v1/")))(restricted_services);
 console.log("restricted_regexp ", restricted_regexp);
 // AUTH middleware

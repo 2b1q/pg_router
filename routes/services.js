@@ -1,8 +1,17 @@
 const router = require("express").Router(),
     { regUser, logout } = require("../controllers/restricted_zone/v1/auth");
-// { subscribe, listSubscribe, unSubscribe } = require("../controllers/restricted_zone/v1/gateway");
 
+/** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
+/*
+todo add AUTH by endpoint massive patterns
+if path included in arr pass to auth
+check and pass to next() controller -> proxy_module
+* */
+const restricted_routes = ['/address', '/account', '/block'];
+// req.url split => include
+
+
 
 /** REST API v.1.0 endpoints
  * - routing by path

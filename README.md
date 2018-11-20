@@ -63,6 +63,7 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
   "id": null
 }
 ```
+### LTC/BTC service request proxying
 Lets try ask rates from LTC
 use *user_name:user_password* to GET response from service.
 service proxying request pattern: *<pgw>/api/v1/<service_name>/enpoint?param1=val1*
@@ -84,7 +85,7 @@ $ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=LTC' -X GET  --user 1
   }
 }
 ```
-### LTC/BTC JSON-RPC request
+### LTC/BTC JSON-RPC node request proxying
 Use basic cURL json-rpc request to get data from node
 node json-rpc request pattern:
 `curl -s 'http://pgw_host:pgw_port/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "node method",\n "params": []\n}' --user <node_type>@<user_name>:<user_password>`

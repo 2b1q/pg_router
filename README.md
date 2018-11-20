@@ -32,7 +32,7 @@
 ### Install and Run PGR
 1. `cp config-example.js config.js`
 2. edit config.js (setup env properties)
-3. run docker-composer stack
+3. run (docker-compose -f stack.yml up -d)
 ```sh
 $ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git
 $ cd payment-gateway-router
@@ -63,6 +63,27 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
   "id": null
 }
 ```
+Lets try ask rates from LTC
+use *user_name:user_password* to GET response from service.
+service proxying request pattern: *<pgw>/api/v1/<service_name>/enpoint?param1=val1*
+```sh
+$ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=LTC' -X GET  --user 123:www -d '{}'|jq
+{
+  "msg": "authorized",
+  "serviceUrl": "http://137.117.110.27:8100/api/v1/rates/all?from=LTC",
+  "result": {
+    "statusCode": 200,
+    "statusMessage": "OK",
+    "body": {
+      "BKX": 0.0010352083318428426,
+      "BTC": 137.76605258451082,
+      "ETH": 4.074107196088952,
+      "LTC": 1,
+      "USD": 0.029809813390568176
+    }
+  }
+}
+```
 ### LTC/BTC JSON-RPC request
 Use basic cURL json-rpc request to get data from node
 node json-rpc request pattern:
@@ -78,5 +99,7 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
 {"result":7184404942701.792,"error":null,"id":null} 
 ```
 HTTP header 'content-type' could be any -H 'content-type: text/plain;' OR -H 'Content-Type: application/json'
-### Demo
+### Demo init 
 ![](pgw.gif)
+### Demo service proxying request
+![](pgw_rates.gif)

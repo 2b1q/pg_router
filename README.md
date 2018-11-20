@@ -99,7 +99,10 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
 {"result":7184404942701.792,"error":null,"id":null} 
 ```
 HTTP header 'content-type' could be any -H 'content-type: text/plain;' OR -H 'Content-Type: application/json'
-### Demo init 
-![](pgw.gif)
+### Demo proxying BTC/LTC services & JSON-RPC to BCT/LTC nodes
+![](pgw_all.gif)
 ### Demo service proxying request
 ![](pgw_rates.gif)
+### Demo init stack 
+![](pgw.gif)
+

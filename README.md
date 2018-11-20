@@ -43,7 +43,19 @@ $ docker-compose -f stack.yml up -d
 Lets create a new PGR user
 ```sh
 $ curl -s 'http://localhost:3006/api/v1/user' -X POST -H "Content-Type:application/json" --user myNewUser:myNewPassword -d '{}'
-{"msg":"new user created successfully","error":null,"reg_services":["btc","ltc"],"logins":["btc@myNewUser","ltc@myNewUser"]}
+{
+  "msg": "new user created successfully",
+  "error": null,
+  "reg_services": [
+    "btc",
+    "ltc"
+  ],
+  "json_rpc_logins": [
+    "btc@myNewUser",
+    "ltc@myNewUser"
+  ],
+  "rest_services_login": "myNewUser"
+}
 ```
 Ok! Lets try with **BTC**
 ```sh

@@ -1,6 +1,7 @@
 const router = require("express").Router(),
     { color: c, restricted_endpoints, restricted_services } = require("../config/config"),
-    { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth");
+    { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth"),
+    { get: clientGet } = require("../node_interaction/adapter_clients");
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
@@ -23,14 +24,25 @@ router.get(restricted_regexp, (req, res) => {
     let adapter = service[2];
     let endpoint = typeof service[4] === "undefined" ? service[3] : service[3] + "/" + service[4];
     let params = req.query;
+    let raw_param_string = req.url.split("?")[1];
     service = {
         adapter: adapter,
         endpoint: endpoint,
-        parameters: params
+        parameters: params,
+        param_string: raw_param_string
     };
     console.log(c.yellow, "service to proxy:", c.magenta, service, c.white);
     checkAuth(req)
-        .then(() => res.json({ msg: "authorized", service }))
+        .then(async () => {
+            // await service request
+            try {
+                var { url, result } = await clientGet(service);
+            } catch (e) {
+                console.error("clientGet(service) error: ", e);
+            }
+            console.log("service URL :", url);
+            res.json({ msg: "authorized", serviceUrl: url, result: result });
+        })
         .catch(msg => res.status(401).json(msg));
 });
 

@@ -14,6 +14,7 @@ let wid = cluster.worker.id;
 //     let { btc_rates } = cfg.services;
 //     console.log("btc_rates from LTC", btc_rates("/all?from=LTC"));
 //     console.log("btc_rates from LTC to BTC", btc_rates("?from=BTC&to=LTC"));
+//     console.log("btc_rates ", btc_rates(""));
 // }
 
 /**
@@ -38,10 +39,10 @@ app.use(bodyParser.json({ type: req => true })) // parse any Content-type as jso
     .use((req, res, next) => {
         if (env !== "production") {
             console.log(`${c.green}WORKER[${c.cyan}${wid}${c.green}]${c.white}`);
-            console.log(c.green,"req headers\n", c.white, req.headers);
-            console.log(c.green,"req query\n", c.white, req.query);
-            console.log(c.green,"req body\n", c.white, req.body);
-            console.log(c.green,'req.url: ', c.white, req.url);
+            console.log(c.green, "req headers\n", c.white, req.headers);
+            console.log(c.green, "req query\n", c.white, req.query);
+            console.log(c.green, "req body\n", c.white, req.body);
+            console.log(c.green, "req.url: ", c.white, req.url);
         }
         res.removeHeader("X-Powered-By"); // drop "X-Powered-By" header
         next();

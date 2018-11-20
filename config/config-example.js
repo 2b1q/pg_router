@@ -13,16 +13,14 @@ const service = type => {
             host: "137.117.110.27",
             port: 8100,
             currencies: ["BTC", "LTC", "ETH", "BKX", "USD"],
-            endpoints: {
-                rates: "api/v1/rates"
-            }
+            endpoint: "api/v1/"
         },
-        btc_adapter: { host: "137.117.110.27", port: 8101 },
-        ltc_adapter: { host: "137.117.110.27", port: 8102 }
+        btc_adapter: { host: "137.117.110.27", port: 8101, endpoint: "api/v1/" },
+        ltc_adapter: { host: "137.117.110.27", port: 8102, endpoint: "api/v1/" }
     };
     // check if passed service name  exists
     let service = typeof names[type] == "undefined" ? undefined : names[type];
-    return method => (typeof service == "undefined" ? "" : `http://${service.host}:${service.port}/${service.endpoints.rates}${method}`);
+    return method => (typeof service == "undefined" ? "" : `http://${service.host}:${service.port}/${service.endpoint}${method}`);
 };
 
 /** Common config for all ENV */

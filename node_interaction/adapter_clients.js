@@ -27,7 +27,10 @@ exports.get = ({ adapter, endpoint, param_string: params }) =>
         let url; // url container
         // redirect to help URL
         if (endpoint === "help") {
-            url = adapter === "btc" ? btc_adapter(endpoint) : ltc_adapter(endpoint);
+            if (adapter === "btc") url = btc_adapter(endpoint);
+            if (adapter === "ltc") url = ltc_adapter(endpoint);
+            if (adapter === "rates") url = btc_rates(endpoint);
+            else url = btc_adapter(endpoint); // default helper => btc_adapter helper
             return resolve(url);
         }
         // if endpoint include 'rates' ('api/v1/[btc,ltc]/rates/all?from=BKX') => construct btc_rates(endpoint)

@@ -9,7 +9,7 @@ const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
 // restricted_services stack IIFE (restricted_services) regexp
 const v1_auth_regexp_ptrn = service => new RegExp("(/v1/" + service + "/)"); // v. 1 restricted ReExp pattern
 const restricted_regexp = (rs => v1_auth_regexp_ptrn(rs.map(service => `${service}`).join("/)|(/v1/")))(restricted_services);
-const restricted_zone = [restricted_regexp, v1_ptrn("rates"), v1_ptrn("rates/all")];
+const restricted_zone = [restricted_regexp, v1_ptrn("rates"), v1_ptrn("rates/all"), v1_ptrn("rates/help")];
 console.log("restricted_zone ", restricted_zone);
 // AUTH middleware
 router.get(restricted_zone, async (req, res) => {

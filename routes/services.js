@@ -12,7 +12,7 @@ const restricted_regexp = (rs => v1_auth_regexp_ptrn(rs.map(service => `${servic
 const restricted_zone = [restricted_regexp, v1_ptrn("rates"), v1_ptrn("rates/all")];
 console.log("restricted_zone ", restricted_zone);
 // AUTH middleware
-router.get(restricted_zone, (req, res) => {
+router.get(restricted_zone, async (req, res) => {
     console.log(c.yellow, "Handle restricted route =>", c.cyan, req.path, c.white);
     console.log("req.url => ", req.url);
     let service = req.path.split("/");
@@ -27,6 +27,8 @@ router.get(restricted_zone, (req, res) => {
         param_string: raw_param_string
     };
     console.log(c.yellow, "service to proxy:", c.magenta, service, c.white);
+    // if endpoint = 'help' -> redirect to constructed service url helper without AUTH
+    if (endpoint === "help") return res.redirect(await clientGet(service));
     checkAuth(req)
         .then(async () => {
             // await service request

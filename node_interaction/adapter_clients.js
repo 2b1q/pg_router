@@ -24,8 +24,14 @@ exports.get = ({ adapter, endpoint, param_string: params }) =>
     new Promise(async (resolve, reject) => {
         // URL constructor
         let { btc_rates, btc_adapter, ltc_adapter } = cfg.services;
+        let url; // url container
+        // redirect to help URL
+        if (endpoint === "help") {
+            url = adapter === "btc" ? btc_adapter(endpoint) : ltc_adapter(endpoint);
+            return resolve(url);
+        }
         // if endpoint include 'rates' ('api/v1/[btc,ltc]/rates/all?from=BKX') => construct btc_rates(endpoint)
-        let url = /rates*/.test(endpoint) ? btc_rates(endpoint) : undefined;
+        url = /rates*/.test(endpoint) ? btc_rates(endpoint) : undefined;
         // if adapter = rates ('/api/v1/rates/all?from=BKX') => construct btc_rates(adapter)
         if (typeof url == "undefined") {
             url = adapter === "rates" ? btc_rates(adapter) : undefined;
@@ -41,7 +47,8 @@ exports.get = ({ adapter, endpoint, param_string: params }) =>
         }
         resolve({
             result: result,
-            url: url
+            url: url,
+            redirect: false
         });
     });
 

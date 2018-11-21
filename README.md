@@ -133,9 +133,9 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
 HTTP header 'content-type' could be any -H 'content-type: text/plain;' OR -H 'Content-Type: application/json'
 ### services API Docs
 Use **<PGR>/api/v1/<service>/help** URL pattern to get API ReDoc UI 
-- http://localhost:3006/api/v1/btc/help
-- http://localhost:3006/api/v1/ltc/help
-- http://localhost:3006/api/v1/rates/help
+* [http://localhost:3006/api/v1/ltc/help](http://localhost:3006/api/v1/ltc/help)
+* [http://localhost:3006/api/v1/btc/help](http://localhost:3006/api/v1/btc/help)
+* [http://localhost:3006/api/v1/rates/help](http://localhost:3006/api/v1/rates/help)
 ### Demo proxying BTC/LTC services & JSON-RPC to BCT/LTC nodes
 ![](pgw_all.gif)
 ### Demo service proxying request

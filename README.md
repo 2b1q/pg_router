@@ -75,24 +75,44 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
   "id": null
 }
 ```
-### LTC/BTC service request proxying
-Lets try ask rates from LTC
+### LTC/BTC/rates services request proxying
+Lets try ask **rates**
 use *user_name:user_password* to GET response from service.
-service proxying request pattern: *<pgw>/api/v1/<service_name>/enpoint?param1=val1*
+service proxying request patterns:
+ - *<PGR>/api/v1/<service_name>/enpoint?param1=val1*
+ - *<PGR>/api/v1/<service_name>?param1=val1*
+ Available <service_name> ['btc','ltc','rates']
 ```sh
-$ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=LTC' -X GET  --user 123:www -d '{}'|jq
+$ curl -s 'http://localhost:3006/api/v1/rates/all?from=BKX' -X GET  --user alex:123 -d '{}'
 {
   "msg": "authorized",
-  "serviceUrl": "http://137.117.110.27:8100/api/v1/rates/all?from=LTC",
+  "serviceUrl": "http://137.117.110.27:8100/api/v1/rates/all?from=BKX",
   "result": {
     "statusCode": 200,
     "statusMessage": "OK",
     "body": {
-      "BKX": 0.0010352083318428426,
-      "BTC": 137.76605258451082,
-      "ETH": 4.074107196088952,
-      "LTC": 1,
-      "USD": 0.029809813390568176
+      "BKX": 1,
+      "BTC": 133614.61238656196,
+      "ETH": 3960.600136908633,
+      "LTC": 990.8825395875197,
+      "USD": 28.173283090828228
+    }
+  }
+}
+
+$ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=BTC' -X GET  --user alex:123 -d '{}'
+{
+  "msg": "authorized",
+  "serviceUrl": "http://137.117.110.27:8100/api/v1/rates/all?from=BTC",
+  "result": {
+    "statusCode": 200,
+    "statusMessage": "OK",
+    "body": {
+      "BKX": 7.48349664556962e-06,
+      "BTC": 1,
+      "ETH": 0.02969620253164557,
+      "LTC": 0.007425527426160338,
+      "USD": 0.0002109704641350211
     }
   }
 }
@@ -100,7 +120,7 @@ $ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=LTC' -X GET  --user 1
 ### LTC/BTC JSON-RPC node request proxying
 Use basic cURL json-rpc request to get data from node
 node json-rpc request pattern:
-`curl -s 'http://pgw_host:pgw_port/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "node method",\n "params": []\n}' --user <node_type>@<user_name>:<user_password>`
+`curl -s 'http://pgr_host:pgr_port/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "node method",\n "params": []\n}' --user <node_type>@<user_name>:<user_password>`
 LTC node json-rpc request:
 ```sh
 $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "getdifficulty",\n "params": []\n}' --user ltc@user7777:www

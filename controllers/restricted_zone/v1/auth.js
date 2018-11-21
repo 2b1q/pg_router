@@ -7,7 +7,7 @@ const moment = require("moment"),
     { project, api_version: API_VERSION, color: c } = require("../../../config/config"),
     { api_requests: log_api, error: log_err } = require("../../../utils/logger")(module),
     cluster = require("cluster"),
-    { newUser, checkAuth: auth } = require("../../../models/auth"), // auth module
+    { newUser, checkAuth: auth } = require("../../../modules/auth/v1/auth"), // auth module
     check = require("../../../utils/checker").cheker();
 
 // current module

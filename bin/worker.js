@@ -1,21 +1,11 @@
 const express = require("express"),
-    cluster = require("cluster"), // access to cluster.worker.id
+    { id: wid } = require("cluster").worker, // access to cluster.worker.id
     http = require("http"),
     bodyParser = require("body-parser"),
     cfg = require("../config/config"),
     c = cfg.color,
-    node_proxy = require("../node_interaction/node_rpc_client"),
+    node_proxy = require("../modules/node_interaction/node_rpc_client"),
     env = process.env.NODE_ENV;
-
-// get cluster worker ID
-let wid = cluster.worker.id;
-// if (wid === 1) {
-//     console.log("WID: ", wid);
-//     let { btc_rates } = cfg.services;
-//     console.log("btc_rates from LTC", btc_rates("/all?from=LTC"));
-//     console.log("btc_rates from LTC to BTC", btc_rates("?from=BTC&to=LTC"));
-//     console.log("btc_rates ", btc_rates(""));
-// }
 
 /**
  * Setup Node HTTP server

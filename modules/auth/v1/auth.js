@@ -10,14 +10,14 @@ const {
     store: {
         user: { users: user_col }
     }
-} = require("../config/config");
+} = require("../../../config/config");
 
 /** get modules */
 const crypto = require("crypto"),
     moment = require("moment"),
     cluster = require("cluster"),
-    db = require("../libs/db"),
-    { error: log_err } = require("../utils/logger")(module);
+    db = require("../../../libs/db"),
+    { error: log_err } = require("../../../utils/logger")(module);
 
 // current module
 const _module_ = "Auth model";

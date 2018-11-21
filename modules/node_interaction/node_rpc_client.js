@@ -1,13 +1,13 @@
 /*
 * Node RPC proxy client
 * */
-const cfg = require("../config/config"),
+const cfg = require("../../config/config"),
     { nodes, api_version: API_VERSION, project, color: c } = cfg,
     moment = require("moment"),
     { Client } = require("bitcoin"),
-    check = require("../utils/checker").cheker(), // check util singleton
-    { checkAuth } = require("../models/auth"), // auth module
-    { api_requests: log_api, error: log_err } = require("../utils/logger")(module);
+    check = require("../../utils/checker").cheker(), // check util singleton
+    { checkAuth } = require("../auth/v1/auth"), // auth module
+    { api_requests: log_api, error: log_err } = require("../../utils/logger")(module);
 
 // empty response pattern
 let empty = Object({ result: null, error: null, id: null });

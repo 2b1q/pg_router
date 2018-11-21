@@ -2,12 +2,10 @@
  * service adapter proxy
  * */
 const service_request = require("request"), // HTTP client
-    cluster = require("cluster"), // access to cluster.worker.id
-    cfg = require("../config/config"),
+    { id: wid } = require("cluster").worker, // access to cluster.worker.id
+    cfg = require("../../config/config"),
     c = cfg.color;
 
-// get cluster worker ID
-let wid = cluster.worker.id;
 if (wid === 1) {
     console.log("WID: ", wid);
     let { btc_rates } = cfg.services;

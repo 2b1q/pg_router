@@ -1,7 +1,8 @@
 const router = require("express").Router(),
     { color: c, restricted_endpoints, restricted_services } = require("../config/config"),
     { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth"),
-    { get: clientGet } = require("../node_interaction/adapter_clients");
+    { get: clientGet } = require("../modules/node_interaction/adapter_clients"),
+    { getNodes, addNode, remNode, updNode } = require("../controllers/restricted_zone/v1/node_manager");
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
@@ -42,6 +43,14 @@ router.get(restricted_zone, async (req, res) => {
         })
         .catch(msg => res.status(401).json(msg));
 });
+
+/** node management endpoints */
+router
+    .route(v1_ptrn("node"))
+    .get(getNodes) // get nodes
+    .post(addNode) // add node
+    .delete(remNode) // remove node
+    .put(updNode); // update node
 
 /** SSO reg/Logout endpoints */
 router.post(v1_ptrn("user"), regUser); // reg new user OR get current if user exists

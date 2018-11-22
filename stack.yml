@@ -12,6 +12,8 @@ services:
             - dbname=pgw_dev
             - dbuser=pgwUser
             - dbpass=pgwPass
+            - dburi=mongo:27017
+            - mgmt_api_key=nodemanager&*()
         networks:
             - pgw-net
         links:

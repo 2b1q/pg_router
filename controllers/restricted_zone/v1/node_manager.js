@@ -1,24 +1,29 @@
 const node = require("../../../modules/node_management/interface"),
     cfg = require("../../../config/config"),
+    moment = require("moment"),
     { color: c, api_version: API_VERSION, nodes } = cfg,
     { id: wid } = require("cluster").worker; // access to cluster.worker.id
 
 // current module
-const _module_ = "Node manager controller";
+const _module_ = "Controller";
 // worker id pattern
 const wid_ptrn = msg =>
-    `${c.green}worker[${wid}]${c.red}[AUTH]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${msg}] ${c.white}`;
+    `${c.green}worker[${wid}]${c.red}[node manager]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${msg}] ${
+        c.white
+    }`;
+// error object constructor
+const error = (errCode, msg) => Object({ errCode, msg });
 
 /*
-*  todo check creds before manage node
+*  check API_KEY for node management requests
 * */
-const chekCreds = req => {};
+const chekApiKey = ({ api_key }) => api_key === process.env.mgmt_api_key && process.env.mgmt_api_key !== undefined;
 
-// debug
+// debug node config
 const nodes_ = {};
 Object.keys(nodes).forEach(type => {
-    if (!nodes_[type]) nodes_[type] = [];
-    nodes_[type].push(nodes[type]);
+    if (!nodes_[type + "_nodes"]) nodes_[type + "_nodes"] = [];
+    nodes_[type + "_nodes"].push({ type: type, status: "bootstrapping...", lastBlock: 0, updateTime: moment(), config: nodes[type] });
 });
 
 /*
@@ -26,7 +31,8 @@ Object.keys(nodes).forEach(type => {
 * */
 exports.getNodes = async (req, res) => {
     console.log(wid_ptrn("getNodes"));
-    res.json(nodes_);
+    if (chekApiKey(req.headers)) return res.json(nodes_);
+    res.status(401).json(error(401, "Bad API_KEY"));
 };
 
 /*

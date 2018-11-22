@@ -44,9 +44,7 @@ const check_module_singleton = (() => {
         // check block from client request
         let check_block = block => (block > 0 ? true : false);
         // check address from client request
-        let check_addr_exist = (address, res) => {
-            return address.length === 40 ? true : send_response(res, msg.wrong_addr, 404);
-        };
+        let check_addr_exist = (address, res) => (address.length === 40 ? true : send_response(res, msg.wrong_addr, 404));
 
         // hash operations
         // cut '0x' from hash string

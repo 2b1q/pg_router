@@ -183,7 +183,7 @@ config.dev = {
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
         mongo: {
-            uri: "mongo:27017", // hardcoded
+            uri: process.env.dburi || "mongo:27017",
             dbname: process.env.dbname || "pgw_dev",
             dbuser: process.env.dbuser || "pgwUser",
             dbpass: process.env.dbpass || "pgwPass",

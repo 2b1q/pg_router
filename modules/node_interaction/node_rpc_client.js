@@ -88,3 +88,6 @@ exports.proxy = async (req, res) => {
             res.status(401).json({});
         });
 };
+
+// export node CMD executor for ext modules
+exports.nodeRequest = nodeRequester;

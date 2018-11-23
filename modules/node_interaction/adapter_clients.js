@@ -19,28 +19,23 @@ if (wid === 1) {
 * request execution
 * */
 exports.get = ({ adapter, endpoint, param_string: params }) =>
-    new Promise(async (resolve, reject) => {
+    new Promise(async resolve => {
+        console.log(c.yellow, { adapter, endpoint, params }, c.white);
         // URL constructor
         let { btc_rates, btc_adapter, ltc_adapter } = cfg.services;
         let url; // url container
+        if (adapter === "btc") url = endpoint ? btc_adapter(endpoint) : btc_adapter("");
+        if (adapter === "ltc") url = endpoint ? ltc_adapter(endpoint) : ltc_adapter("");
+        if (adapter === "rates") url = endpoint ? btc_rates(adapter + "/" + endpoint) : btc_rates(adapter); // if service adapter = rates
+        if (/rates*/.test(endpoint)) url = btc_rates(endpoint); // if rates in endpoint PATH
         // redirect to help URL
         if (endpoint === "help") {
-            if (adapter === "btc") url = btc_adapter(endpoint);
-            if (adapter === "ltc") url = ltc_adapter(endpoint);
-            if (adapter === "rates") url = btc_rates(endpoint);
-            else url = btc_adapter(endpoint); // default helper => btc_adapter helper
+            if (adapter === "rates") return resolve(btc_rates(endpoint)); // rebuild URL if adapter === "rates"
             return resolve(url);
         }
-        // if endpoint include 'rates' ('api/v1/[btc,ltc]/rates/all?from=BKX') => construct btc_rates(endpoint)
-        url = /rates*/.test(endpoint) ? btc_rates(endpoint) : undefined;
-        // if adapter = rates ('/api/v1/rates/all?from=BKX') => construct btc_rates(adapter)
-        if (typeof url == "undefined") {
-            url = adapter === "rates" ? btc_rates(adapter) : undefined;
-            if (endpoint) url += "/" + endpoint;
-        }
-        // otherwise construct normal services (btc OR ltc) adapter
-        if (typeof url == "undefined") url = adapter === "btc" ? btc_adapter(endpoint) : ltc_adapter(endpoint);
-        url = typeof params == "undefined" ? url : url + "?" + params;
+        // add params if exists
+        if (params) url += "?" + params;
+        console.log(c.cyan, url, c.white);
         try {
             var result = await adapterRequest(url);
         } catch (e) {
@@ -48,8 +43,7 @@ exports.get = ({ adapter, endpoint, param_string: params }) =>
         }
         resolve({
             result: result,
-            url: url,
-            redirect: false
+            url: url
         });
     });
 

@@ -35,7 +35,6 @@ exports.get = ({ adapter, endpoint, param_string: params }) =>
         }
         // add params if exists
         if (params) url += "?" + params;
-        console.log(c.cyan, url, c.white);
         try {
             var result = await adapterRequest(url);
         } catch (e) {

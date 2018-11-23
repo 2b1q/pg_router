@@ -12,6 +12,27 @@ const wid_ptrn = msg =>
     `${c.green}worker[${wid}]${c.red}[node manager]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${msg}] ${
         c.white
     }`;
+
+/** Observer */
+function Emitter() {
+    this.events = {}; // observer list
+}
+// Event handler
+Emitter.prototype.on = function(type, listener) {
+    this.events[type] = this.events[type] || []; // create event type stack
+    this.events[type].push(listener); // push executor
+};
+// Event emitter
+Emitter.prototype.emit = function(type, arg) {
+    if (this.events[type]) this.events[type].forEach(listener => listener(arg));
+};
+
+// Create emitter Object instance
+let $node = new Emitter();
+
+/** Observers */
+$node.on("add", node => addNode(node));
+
 // bootstrap node config
 const bootstrapped_nodes = {};
 Object.keys(nodes_from_file).forEach(type => {
@@ -44,10 +65,7 @@ wid === 1 &&
                 .findOne({})
                 .then(nodes => {
                     // if nodes === null => addNodes(bootstrapped_nodes)
-                    if (!nodes)
-                        addNodes(bootstrapped_nodes)
-                            .then(node_hashes => console.log("Successfully inserted nodes: ", node_hashes))
-                            .catch(e => console.error("Error while inserting nodes on bootstrap:\n", e));
+                    if (!nodes) addNodes(bootstrapped_nodes);
                 })
                 .catch(e => console.error("Mongo error on bootstrapping nodes: ", e));
         })
@@ -71,43 +89,42 @@ const getNodes = () => new Promise((resolve, reject) => {});
 /*
 * add node Object to DB
 * */
-const addNode = node =>
-    new Promise((resolve, reject) => {
-        // hash nodeObject
-        const nodeHash = crypto
-            .createHmac("sha256", "(@)_(@)")
-            .update(JSON.stringify(node.config))
-            .digest("hex");
-        console.log(wid_ptrn("addNode"), `\nnode_type "${node.type}"\nnode_status: "${node.status}"\nnode_hash: "${nodeHash}"`);
-        node.nodeHash = nodeHash; // add node hash property
-        node.updateTime = new Date(); // update dateTime (UTC)
-        // insert node
-        return db
-            .get()
-            .then(db_instance => {
-                if (!db_instance) return console.error(wid_ptrn("No db instance!"));
-                db_instance
-                    .collection(nodes_col)
-                    .updateOne({ nodeHash: nodeHash }, { $set: { ...node } }, { upsert: true })
-                    .then(data => {
-                        console.log(`Inserting new ${c.magenta}${node.type}${c.green} OK${c.white}`);
-                        resolve(nodeHash);
-                    })
-                    .catch(e => reject(e));
-            })
-            .catch(() => console.error(wid_ptrn("connection to MongoDB lost")));
-    });
+const addNode = node => {
+    // hash nodeObject
+    const nodeHash = crypto
+        .createHmac("sha256", "(@)_(@)")
+        .update(JSON.stringify(node.config))
+        .digest("hex");
+    console.log(
+        wid_ptrn("addNode"),
+        `
+        node_type: ${c.magenta}${node.type}${c.white}
+        node_stat: ${c.cyan}${node.status}${c.white}
+        node_hash: ${c.yellow}${nodeHash}${c.white}`
+    );
+    node.nodeHash = nodeHash; // add node hash property
+    node.updateTime = new Date(); // update dateTime (UTC)
+    // insert node
+    return db
+        .get()
+        .then(db_instance => {
+            if (!db_instance) {
+                console.error(wid_ptrn("No db instance!"));
+                return false;
+            }
+            db_instance
+                .collection(nodes_col)
+                .updateOne({ nodeHash: nodeHash }, { $set: { ...node } }, { upsert: true })
+                .then(() => {
+                    console.log(wid_ptrn("addNode"), `\n${c.magenta}${node.type}${c.yellow} ${nodeHash}${c.green} inserted${c.white}`);
+                    return nodeHash;
+                })
+                .catch(e => console.error(wid_ptrn(e)));
+        })
+        .catch(() => console.error(wid_ptrn("connection to MongoDB lost")));
+};
 
 /*
  * add nodes to DB
  * */
-const addNodes = async nodes => {
-    // get all node types
-    let node_types_list = Object.keys(nodes);
-    let insert_promise_list = [];
-    // construct Promise list
-    node_types_list.forEach(node_type => nodes[node_type].forEach(node => insert_promise_list.push(addNode(node))));
-    return await Promise.all(node_types_list)
-        .then(node_list => node_list)
-        .catch(e => e);
-};
+const addNodes = nodes => Object.keys(nodes).forEach(node_type => nodes[node_type].forEach(node => $node.emit("add", node)));

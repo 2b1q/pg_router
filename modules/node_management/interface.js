@@ -3,6 +3,7 @@ const cfg = require("../../config/config"),
     { color: c, api_version: API_VERSION, nodes: nodes_from_file } = cfg,
     { id: wid } = require("cluster").worker, // access to cluster.worker.id
     db = require("../../libs/db"),
+    { nodeRequest } = require("../node_interaction/node_rpc_client"),
     nodes_col = "nodes";
 
 // current module
@@ -66,6 +67,7 @@ wid === 1 &&
                 .then(nodes => {
                     // if nodes === null => addNodes(bootstrapped_nodes)
                     if (!nodes) addNodes(bootstrapped_nodes);
+                    getLastBlocks();
                 })
                 .catch(e => console.error("Mongo error on bootstrapping nodes: ", e));
         })
@@ -81,10 +83,42 @@ const getBtcNode = () => new Promise((resolve, reject) => {});
  * */
 const getLtcNode = () => new Promise((resolve, reject) => {});
 
+const getLastBlocks = async () => {
+    // cmd:  [ { method: 'getblockcount', params: [] } ]
+    // nodeRequest(type, method, params)
+    try {
+        var _nodes = await getNodes();
+    } catch (e) {
+        return console.error("getLastBlocks error: ", e);
+    }
+    _nodes.forEach(async node =>
+        console.log({
+            ...node,
+            _lastblock: await nodeRequest(node.type, "getblockcount", [])
+        })
+    );
+};
+
 /*
 * Get all nodes from DB
 * */
-const getNodes = () => new Promise((resolve, reject) => {});
+const getNodes = () =>
+    new Promise((resolve, reject) =>
+        db
+            .get()
+            .then(db_instance => {
+                console.log(wid_ptrn("getNodes"));
+                if (!db_instance) return reject(console.error(wid_ptrn("No db instance!")));
+                db_instance
+                    .collection(nodes_col)
+                    .find({})
+                    .toArray((err, result) => {
+                        if (err) return reject(console.error(wid_ptrn("Mongo error on getNodes"), err));
+                        resolve(result);
+                    });
+            })
+            .catch(() => reject("connection to MongoDB lost"))
+    );
 
 /*
 * add node Object to DB

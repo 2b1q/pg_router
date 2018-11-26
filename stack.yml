@@ -1,11 +1,61 @@
 version: "3"
 services:
-    pgw_node:
-        build: .
+    pgr_gw_core:
+        build:
+            context: ./components/gw_core
         command: npm start
         ports:
             - "3006:3006"
         depends_on:
+            - pgr_adapter_proxy
+            - pgr_node_manager
+            - pgr_node_proxy
+            - pgr_user_manager
+            - redis
+        environment:
+            - NODE_ENV=dev
+            - mgmt_api_key=nodemanager&*()
+        networks:
+            - pgr-net
+        links:
+            - pgr_adapter_proxy
+            - pgr_node_manager
+            - pgr_node_proxy
+            - pgr_user_manager
+            - redis
+
+    pgr_adapter_proxy:
+        build:
+            context: ./components/adapter_proxy
+        command: npm start
+        depends_on:
+            - redis
+        environment:
+            - NODE_ENV=dev
+        networks:
+            - pgr-net
+        links:
+            - redis
+
+    pgr_node_proxy:
+        build:
+            context: ./components/json_rpc_proxy
+        command: npm start
+        depends_on:
+            - redis
+        environment:
+            - NODE_ENV=dev
+        networks:
+            - pgr-net
+        links:
+            - redis
+
+    pgr_node_manager:
+        build:
+            context: ./components/node_manager
+        command: npm start
+        depends_on:
+            - redis
             - mongo
         environment:
             - NODE_ENV=dev
@@ -13,12 +63,31 @@ services:
             - dbuser=pgwUser
             - dbpass=pgwPass
             - dburi=mongo:27017
-            - mgmt_api_key=nodemanager&*()
         networks:
-            - pgw-net
+            - pgr-net
         links:
+            - redis
             - mongo
-            - rabbitmq
+
+    pgr_user_manager:
+        build:
+            context: ./components/user_services
+        command: npm start
+        depends_on:
+            - redis
+            - mongo
+        environment:
+            - NODE_ENV=dev
+            - dbname=pgw_dev
+            - dbuser=pgwUser
+            - dbpass=pgwPass
+            - dburi=mongo:27017
+        networks:
+            - pgr-net
+        links:
+            - redis
+            - mongo
+
 
     mongo:
         image: mongo:latest
@@ -27,7 +96,7 @@ services:
         volumes:
             - db-data:/data/db
         networks:
-            - pgw-net
+            - pgr-net
         ports:
             - "27017:27017"
         environment:
@@ -39,7 +108,7 @@ services:
         depends_on:
             - mongo
         networks:
-            - pgw-net
+            - pgr-net
         restart: always
         ports:
             - "8081:8081"
@@ -47,16 +116,16 @@ services:
             ME_CONFIG_MONGODB_ADMINUSERNAME: root
             ME_CONFIG_MONGODB_ADMINPASSWORD: toor
 
-    rabbitmq:
-        image: rabbitmq:3
-    networks:
-        - pgw-net
+    redis:
+        image: redis:latest
+        networks:
+            - pgr-net
         restart: always
         ports:
-            - "5672:5672"
+            - "6379:6379"
 
 networks:
-    ? pgw-net
+    ? pgr-net
 
 volumes:
     ? db-data

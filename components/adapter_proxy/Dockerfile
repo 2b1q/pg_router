@@ -1,4 +1,4 @@
-FROM node
+FROM node:latest
 
 # Create app directory
 WORKDIR /usr/app
@@ -9,7 +9,3 @@ RUN npm install --quiet
 
 # Bundle app source
 COPY . ./
-
-#EXPOSE 3006
-
-#CMD ["npm", "start"]

@@ -8,6 +8,7 @@
         "start": "nodemon ./bin/app.js"
     },
     "dependencies": {
+        "amqplib": "^0.5.2",
         "bitcoin": "^3.0.1",
         "body-parser": "^1.18.3",
         "cluster": "^0.7.7",

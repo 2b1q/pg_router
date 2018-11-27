@@ -1,6 +1,6 @@
 const cluster = require("cluster");
 
-require(cluster.isMaster ? "./master" : "./worker");
+require(cluster.isMaster ? "./master" : "./node_proxy_worker");
 
 // uncaughtException handler
 process.on("uncaughtException", err => {

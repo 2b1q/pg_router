@@ -10,7 +10,6 @@
     "dependencies": {
         "mongodb": "^3.0.10",
         "cluster": "^0.7.7",
-        "events": "^3.0.0",
         "json-parse-safe": "^1.0.5",
         "moment": "^2.22.2",
         "node-redis-rpc": "^1.0.8",

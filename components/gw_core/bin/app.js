@@ -1,6 +1,6 @@
 const cluster = require('cluster');
 
-require(cluster.isMaster ? './master' : './worker');
+require(cluster.isMaster ? './master' : './gw_core_worker');
 
 // uncaughtException handler
 process.on('uncaughtException', (err) => {

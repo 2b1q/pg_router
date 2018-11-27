@@ -6,6 +6,8 @@ const express = require("express"),
     c = cfg.color,
     env = process.env.NODE_ENV;
 
+let response; // response container
+
 /** simple RPC behavior */
 const redisRpc = require('node-redis-rpc');
 const config = {
@@ -14,10 +16,15 @@ const config = {
     scope: 'test'      // use scope to prevent sharing messages between "node redis rpc"
 };
 const rpc = new redisRpc(config);
-// RPC callback
-const rpc_callback = (err, result) => {
-    if(err) return console.error(`Worker: [${wid}]" error:\n`, err);
-    console.log(`Worker: [${wid}]. Module: 'MAIN' RPC Data>>>\n`, result)
+const node_rpc_channel = 'node_rpc:'+wid;
+// redis RPC callback for JSON-RPC messaging
+const rpc_callback = (err, data ) => {
+    if(err) {
+        console.error(`Worker: [${wid}]" error:\n`, err);
+        return response.json(err)
+    }
+    console.log(`Worker: [${wid}]. Module: 'MAIN' RPC Data>>>\n`, data);
+    response.json(data)
 };
 
 /**
@@ -51,26 +58,21 @@ app.use(bodyParser.json({ type: req => true })) // parse any Content-type as jso
         next();
     })
     // proxying node-RPC requests
-    .use((req, res, next) => {
+    .use(async (req, res, next) => {
         let { jsonrpc } = req.body;
         if(!jsonrpc) next();
-        // Trigger an event on the channel "node_rpc"
-        rpc.emit(
-            'node_rpc',      // channel
-            // message data
-            {
-                data: req.body
-            },
-            // options
+        response = res;
+        /* Trigger an event on the channel "node_rpc:<wid>"
+        *  arg1 - channel
+        *  arg2 - msg data JSON
+        *  arg3 - options + cb (register a callback handler to be executed when the rpc result returns)
+        * */
+        rpc.emit(node_rpc_channel, { payload: req.body },
             {
                 type: 'rpc',            // trigger an event of type "rpc"
-                callback: rpc_callback // register a callback handler to be executed when the rpc result returns
+                callback:  rpc_callback // register a callback handler to be executed when the rpc result returns
             }
-        );
-
-        res.json({ msg: 'test dummy payload'});
-
-        // !jsonrpc ? next() : node_proxy.proxy(req, res);
+        )
     })
     .use("/api", require("../routes/services")) // attach API router
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler

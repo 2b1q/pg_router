@@ -9,8 +9,22 @@ const _module_ = "JSON-RPC-proxy";
 // worker id pattern
 const wid_ptrn = endpoint =>
     `${c.green}worker[${wid}]${c.red}[RPC]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
+const wid_err_ptrn = endpoint =>
+    `${c.green}worker[${wid}]${c.red}[RPC]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red}[${endpoint}] ${c.white}`;
+
 // response container
-let response;
+let response = Object.create(null);
+const rpc_timeout = 1000;
+const rpc_timeout_err = 'RPC service "JSON-RPC-NODE-PROXY" request timeout occurred';
+const reqTimeout = () =>{
+    setTimeout(()=>{
+        if(response) {
+            console.log(wid_err_ptrn(rpc_timeout_err));
+            response.json({ err: rpc_timeout_err });
+            response = null; // clear response
+        }
+    }, rpc_timeout)
+};
 
 /** simple RPC behavior */
 const redisRpc = require('node-redis-rpc');
@@ -19,11 +33,12 @@ const node_rpc_channel = 'node_rpc:'+wid;
 // redis RPC callback for JSON-RPC messaging
 const rpc_callback = (err, data ) => {
     if(err) {
-        console.error(`Worker: [${wid}]" error:\n`, err);
+        console.log(wid_err_ptrn(err));
         return response.json(err)
     }
-    console.log(`Worker: [${wid}]. Module: 'MAIN' RPC Data>>>\n`, data);
-    response.json(data)
+    console.log(wid_ptrn(`get callback from service ${node_rpc_channel}`), '\n',data);
+    response.json(data);
+    response = null;
 };
 
 /* Trigger an event on the channel "node_rpc:<wid>"
@@ -31,10 +46,13 @@ const rpc_callback = (err, data ) => {
  *  arg2 - msg data JSON
  *  arg3 - options + cb (register a callback handler to be executed when the rpc result returns)
  * */
-exports.emit = payload =>  rpc.emit(node_rpc_channel, { payload: payload },
-    {
-        type: 'rpc',            // trigger an event of type "rpc"
-        callback:  rpc_callback // register a callback handler to be executed when the rpc result returns
-    }
-)
+exports.emit = (payload) =>  {
+    console.log(wid_ptrn(`send payload to service ${node_rpc_channel}`),'\n',payload);
+    rpc.emit(node_rpc_channel, { payload: payload },
+        {
+            type: 'rpc',            // trigger an event of type "rpc"
+            callback:  rpc_callback // register a callback handler to be executed when the rpc result returns
+    });
+    reqTimeout(); // reg Error callback timeout
+};
 exports.setRes = res => response = res;

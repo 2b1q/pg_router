@@ -10,26 +10,17 @@ const _module_ = "JSON-RPC-proxy";
 const wid_ptrn = endpoint =>
     `${c.green}worker[${wid}]${c.red}[RPC]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
 const wid_err_ptrn = endpoint =>
-    `${c.green}worker[${wid}]${c.red}[RPC]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red}[${endpoint}] ${c.white}`;
+    `${c.green}worker[${wid}]${c.red}[RPC]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]
+${c.red}[ERROR] ${endpoint}] ${c.white}`;
 
 // response container
 let response = Object.create(null);
-const rpc_timeout = 1000;
-const rpc_timeout_err = 'RPC service "JSON-RPC-NODE-PROXY" request timeout occurred';
-const reqTimeout = () =>{
-    setTimeout(()=>{
-        if(response) {
-            console.log(wid_err_ptrn(rpc_timeout_err));
-            response.json({ err: rpc_timeout_err });
-            response = null; // clear response
-        }
-    }, rpc_timeout)
-};
-
-/** simple RPC behavior */
+/** simple RPC behavior constructor */
 const redisRpc = require('node-redis-rpc');
 const rpc = new redisRpc(redis_cfg);
-const node_rpc_channel = 'node_rpc:'+wid;
+const node_rpc_channel = channel.jrpc(wid);
+const rpc_timeout = 1000;
+const rpc_timeout_err = `RPC service ${node_rpc_channel} request timeout occurred`;
 // redis RPC callback for JSON-RPC messaging
 const rpc_callback = (err, data ) => {
     if(err) {
@@ -38,7 +29,17 @@ const rpc_callback = (err, data ) => {
     }
     console.log(wid_ptrn(`get callback from service ${node_rpc_channel}`), '\n',data);
     response.json(data);
-    response = null;
+    response = null; // clear response object
+};
+// request timeout error callback
+const reqTimeout = () =>{
+    setTimeout(()=>{
+        if(response) {
+            console.log(wid_err_ptrn(rpc_timeout_err));
+            response.json({ err: rpc_timeout_err });
+            response = null; // clear response
+        }
+    }, rpc_timeout)
 };
 
 /* Trigger an event on the channel "node_rpc:<wid>"

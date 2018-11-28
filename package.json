@@ -1,5 +1,5 @@
 {
-    "name": "bankex-payment-gateway",
+    "name": "bankex-payment-gateway-core",
     "author": "2b1q",
     "version": "0.0.1",
     "license": "ISC",
@@ -8,22 +8,17 @@
         "start": "nodemon ./bin/app.js"
     },
     "dependencies": {
-        "bitcoin": "^3.0.1",
         "body-parser": "^1.18.3",
         "cluster": "^0.7.7",
         "compression": "^1.7.2",
         "cookie-parser": "~1.4.3",
         "debug": "~2.6.9",
-        "events": "^3.0.0",
         "express": "~4.16.0",
         "express-session": "^1.15.6",
         "json-parse-safe": "^1.0.5",
-        "jsonwebtoken": "^8.3.0",
         "moment": "^2.22.2",
-        "mongodb": "^3.0.10",
         "node-redis-rpc": "^1.0.8",
         "nodemon": "^1.18.4",
-        "request": "^2.88.0",
         "winston": "^3.0.0"
     },
     "devDependencies": {

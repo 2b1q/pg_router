@@ -1,8 +1,8 @@
 const router = require("express").Router(),
     { color: c, restricted_endpoints, restricted_services } = require("../config/config"),
-    { regUser, checkAuth } = require("../controllers/restricted_zone/v1/auth"),
+    { regUser, checkAuth } = require("../controllers/rpc/v1/rpc_auth"),
     // { get: clientGet } = require("../modules/node_interaction/adapter_clients"),
-    { getNodes, addNode, remNode, updNode } = require("../controllers/restricted_zone/v1/node_manager");
+    { getNodes, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager");
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern

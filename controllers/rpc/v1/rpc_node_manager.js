@@ -1,6 +1,6 @@
 const cfg = require("../../../config/config"),
     moment = require("moment"),
-    { color: c, api_version: API_VERSION, nodes } = cfg,
+    { color: c, api_version: API_VERSION } = cfg,
     { id: wid } = require("cluster").worker; // access to cluster.worker.id
 
 // current module
@@ -20,10 +20,10 @@ const chekApiKey = ({ api_key }) => api_key === process.env.mgmt_api_key && proc
 
 // debug node config
 const nodes_ = {};
-Object.keys(nodes).forEach(type => {
-    if (!nodes_[type + "_nodes"]) nodes_[type + "_nodes"] = [];
-    nodes_[type + "_nodes"].push({ type: type, status: "bootstrapping...", lastBlock: 0, updateTime: moment(), config: nodes[type] });
-});
+// Object.keys(nodes).forEach(type => {
+//     if (!nodes_[type + "_nodes"]) nodes_[type + "_nodes"] = [];
+//     nodes_[type + "_nodes"].push({ type: type, status: "bootstrapping...", lastBlock: 0, updateTime: moment(), config: nodes[type] });
+// });
 
 /*
 * get all nodes

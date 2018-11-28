@@ -15,19 +15,19 @@ const _module_ = "REST API Auth controller";
 // cluster.worker.id
 const wid = cluster.worker.id;
 
-/** simple RPC behavior */
-const redisRpc = require('node-redis-rpc');
-const config = {
-    host: 'redis', // redis server hostname
-    port: 6379,        // redis server port
-    scope: 'test'      // use scope to prevent sharing messages between "node redis rpc"
-};
-const rpc = new redisRpc(config);
-// RPC callback
-const rpc_callback = (err, result) => {
-    if(err) return console.error(`Worker: [${wid}]" error:\n`, err);
-    console.log(`Worker: [${wid}]. Module: '${_module_}' RPC Data>>>\n`, result)
-};
+// /** simple RPC behavior */
+// const redisRpc = require('node-redis-rpc');
+// const config = {
+//     host: 'redis', // redis server hostname
+//     port: 6379,        // redis server port
+//     scope: 'test'      // use scope to prevent sharing messages between "node redis rpc"
+// };
+// const rpc = new redisRpc(config);
+// // RPC callback
+// const rpc_callback = (err, result) => {
+//     if(err) return console.error(`Worker: [${wid}]" error:\n`, err);
+//     console.log(`Worker: [${wid}]. Module: '${_module_}' RPC Data>>>\n`, result)
+// };
 
 
 // worker id pattern

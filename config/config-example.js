@@ -24,7 +24,7 @@ const service = type => {
 };
 
 /** Common config for all ENV */
-const api_version = "v. 1.0",
+const api_version = "v. 2.0",
     project = "BANKEX Payment-gateway-router",
     errors = {
         404: { errorCode: 404, errorMessage: "Not Found. Bad API URL" },
@@ -32,17 +32,6 @@ const api_version = "v. 1.0",
         409: { errorCode: 409, errorMessage: "Something went wrong during logout operation" }, //409 Conflict
         crash: err => Object({ errorCode: 500, errorMessage: err })
     };
-
-// DB collections
-const cols = {
-    // common base cols
-    base: {},
-    // user collections
-    user: {
-        tokens: "user_tokens", // store user tokens
-        users: "users" // store user data
-    }
-};
 
 // colorize console
 const color = {
@@ -58,29 +47,6 @@ const color = {
 
 /** Staging (default) environment */
 config.staging = {
-    jwt: {
-        ttl: 3600,
-        secret: "123asd789ABCqwt"
-    },
-    user_pass_hash_secret: "sup4_Dup4#sEcreD", // user pass hash secret
-    nodes: {
-        btc: {
-            protocol: "http",
-            host: "34.217.183.33",
-            port: 8332,
-            user: "",
-            pass: "",
-            timeout: 30000
-        },
-        ltc: {
-            protocol: "http",
-            host: "34.219.117.248",
-            port: 9332,
-            user: "",
-            pass: "",
-            timeout: 30000
-        }
-    },
     services: {
         btc_rates: service("btc_rates"),
         btc_adapter: service("btc_adapter"),
@@ -106,21 +72,34 @@ config.staging = {
         port: 3006,
         ip: "0.0.0.0"
     },
+    btc_main_net_server: {
+        port: 8332,
+        ip: "0.0.0.0"
+    },
+    btc_test_net_server: {
+        port: 18332,
+        ip: "0.0.0.0"
+    },
+    ltc_main_net_server: {
+        port: 9332,
+        ip: "0.0.0.0"
+    },
+    ltc_test_net_server: {
+        port: 19332,
+        ip: "0.0.0.0"
+    },
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
-        mongo: {
-            uri: "127.0.0.1:27017", // hardcoded
-            dbname: "pgw",
-            dbuser: "pgwUser",
-            dbpass: "pgwPass",
-            options: {
-                // autoIndex: false,
-                useNewUrlParser: true
-                // poolSize: 10 // количество подключений в пуле
-            }
+        redis: {
+            host: 'localhost', // redis server hostname
+            port: 6379,        // redis server port
+            scope: 'staging'      // use scope to prevent sharing messages between "node redis rpc"
         },
-        cols: cols.base,
-        user: cols.user
+        channel: {
+            jrpc: wid => typeof wid === 'undefined' ? 'pg_jrpc:' : 'pg_jrpc:' + wid,
+            auth: wid => typeof wid === 'undefined' ? 'pg_auth:' : 'pg_auth:' + wid,
+            nm: wid => typeof wid === 'undefined' ? 'pg_nm:' : 'pg_nm:' + wid,
+        }
     },
     color: color
 };
@@ -132,29 +111,6 @@ config.production = {};
 
 /** Dev environment */
 config.dev = {
-    jwt: {
-        ttl: 3600,
-        secret: "123asd789ABCqwt"
-    },
-    user_pass_hash_secret: "sup4_Dup4#sEcreD", // user pass hash secret
-    nodes: {
-        btc: {
-            protocol: "http",
-            host: "34.217.183.33",
-            port: 8332,
-            user: "",
-            pass: "",
-            timeout: 30000
-        },
-        ltc: {
-            protocol: "http",
-            host: "34.219.117.248",
-            port: 9332,
-            user: "",
-            pass: "",
-            timeout: 30000
-        }
-    },
     services: {
         btc_rates: service("btc_rates"),
         btc_adapter: service("btc_adapter"),
@@ -180,27 +136,40 @@ config.dev = {
         port: 3006,
         ip: "0.0.0.0"
     },
+    btc_main_net_server: {
+        port: 8332,
+        ip: "0.0.0.0"
+    },
+    btc_test_net_server: {
+        port: 18332,
+        ip: "0.0.0.0"
+    },
+    ltc_main_net_server: {
+        port: 9332,
+        ip: "0.0.0.0"
+    },
+    ltc_test_net_server: {
+        port: 19332,
+        ip: "0.0.0.0"
+    },
     /** ============= NEED TO BE SPECIFIED ============= */
     store: {
-        mongo: {
-            uri: process.env.dburi || "mongo:27017",
-            dbname: process.env.dbname || "pgw_dev",
-            dbuser: process.env.dbuser || "pgwUser",
-            dbpass: process.env.dbpass || "pgwPass",
-            options: {
-                // autoIndex: false,
-                useNewUrlParser: true
-                // poolSize: 10 // количество подключений в пуле
-            }
+        redis: {
+            host: 'redis', // redis server hostname
+            port: 6379,        // redis server port
+            scope: 'dev'      // use scope to prevent sharing messages between "node redis rpc"
         },
-        cols: cols.base,
-        user: cols.user
+        channel: {
+            jrpc: wid => typeof wid === 'undefined' ? 'pg_jrpc:' : 'pg_jrpc:' + wid,
+            auth: wid => typeof wid === 'undefined' ? 'pg_auth:' : 'pg_auth:' + wid,
+            nm: wid => typeof wid === 'undefined' ? 'pg_nm:' : 'pg_nm:' + wid,
+        }
     },
     color: color
 };
 /** END OF Dev environment */
 
-// Determine passed ENV
+    // Determine passed ENV
 const currentEnv = typeof process.env.NODE_ENV == "string" ? process.env.NODE_ENV.toLowerCase() : "";
 
 // Check ENV to export (if ENV not passed => default ENV is 'staging')

@@ -18,7 +18,7 @@ let response = Object.create(null);
 /** simple RPC behavior constructor */
 const redisRpc = require('node-redis-rpc');
 const rpc = new redisRpc(redis_cfg);
-const node_rpc_channel = channel.jrpc(wid);
+const node_rpc_channel = channel.jrpc('master'); // connect to master channel
 const rpc_timeout = 1000;
 const rpc_timeout_err = `RPC service ${node_rpc_channel} request timeout occurred`;
 // redis RPC callback for JSON-RPC messaging

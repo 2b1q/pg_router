@@ -1,5 +1,5 @@
 const cluster = require('cluster');
-
+require('events').EventEmitter.prototype._maxListeners = 100; // increase (MaxListenersExceededWarning) the default limit globally
 require(cluster.isMaster ? './master' : './gw_core_worker');
 
 // uncaughtException handler

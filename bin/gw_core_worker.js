@@ -29,8 +29,8 @@ const express = require("express"),
 * */
 const {              server: { port: port1 }, // HTTP REST API
         btc_main_net_server: { port: port2 }, // JSON-RPC BTC main-net
-        btc_test_net_server: { port: port3 }, // JSON-RPC LTC main-net
-        ltc_main_net_server: { port: port4 },
+        ltc_main_net_server: { port: port3 }, // JSON-RPC LTC main-net
+        btc_test_net_server: { port: port4 },
         ltc_test_net_server: { port: port5 }} = cfg;
 
 // Normalize a port into a number, string, or false
@@ -105,7 +105,7 @@ app2.use(bodyParser.json({ type: req => true })) // parse any Content-type as js
         let { jsonrpc } = req.body;
         if(!jsonrpc) next();
         jrpc.setRes(res);
-        jrpc.emit(req.body)
+        jrpc.emit({...req.body, node_type: 'btc'});
     })
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler
@@ -142,7 +142,7 @@ app3.use(bodyParser.json({ type: req => true })) // parse any Content-type as js
         let { jsonrpc } = req.body;
         if(!jsonrpc) next();
         jrpc.setRes(res);
-        jrpc.emit(req.body)
+        jrpc.emit({...req.body, node_type: 'ltc'})
     })
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler

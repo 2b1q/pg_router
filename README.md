@@ -1,16 +1,16 @@
 # payment-gateway-router [PGR]
-Stateless apps container:
-- App1 (HTTP JSON-RPC BTC proxy)
-    - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-    - best node lookup (RPC service - pg_nm)
-- App2 (HTTP JSON-RPC LTC proxy)
-    - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-    - best node lookup (RPC service - pg_nm)
-- App3 (HTTP REST API)
-    - direct proxying to adapters endpoints (AUTH required)
-    - AUTH (RPC service)
-    - reg user (RPC service)
-    - helpers proxy (AUTH not required)
+Payment gateway router with stateless apps container and async IO/RPC
+* App1 (HTTP JSON-RPC BTC proxy)
+        - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+        - best node lookup (RPC service - pg_nm)
+* App2 (HTTP JSON-RPC LTC proxy)
+        - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+        - best node lookup (RPC service - pg_nm)
+* App3 (HTTP REST API)
+        - direct proxying to adapters endpoints (AUTH required)
+        - AUTH (RPC service)
+        - reg user (RPC service)
+        - helpers proxy (AUTH not required)
 ## Architecture
 ![](pg_router.jpg)
 ### PGR components

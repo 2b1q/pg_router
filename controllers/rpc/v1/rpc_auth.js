@@ -1,12 +1,13 @@
 // todo add RPC interaction with AUTH service-model
-
 /*
 * REST controller
 * AUTH check
 * regNew user
 * */
 const moment = require("moment"),
-    { project, api_version: API_VERSION, color: c } = require("../../../config/config"),
+    { project, api_version: API_VERSION, color: c, store } = require("../../../config/config"),
+    { redis: redis_cfg, channel } = store,
+    rpc = require('../../../modules/rpc'), // RPC wrapper
     { api_requests: log_api, error: log_err } = require("../../../utils/logger")(module),
     cluster = require("cluster"),
     // { newUser, checkAuth: auth } = require("../../../modules/auth/v1/auth"), // auth module
@@ -16,26 +17,12 @@ const moment = require("moment"),
 const _module_ = "REST API Auth controller";
 // cluster.worker.id
 const wid = cluster.worker.id;
-
-// /** simple RPC behavior */
-// const redisRpc = require('node-redis-rpc');
-// const config = {
-//     host: 'redis', // redis server hostname
-//     port: 6379,        // redis server port
-//     scope: 'test'      // use scope to prevent sharing messages between "node redis rpc"
-// };
-// const rpc = new redisRpc(config);
-// // RPC callback
-// const rpc_callback = (err, result) => {
-//     if(err) return console.error(`Worker: [${wid}]" error:\n`, err);
-//     console.log(`Worker: [${wid}]. Module: '${_module_}' RPC Data>>>\n`, result)
-// };
-
-
 // worker id pattern
 const wid_ptrn = endpoint =>
-    `${c.green}worker[${wid}]${c.red}[AUTH]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
-
+    `${c.green}worker[${wid}]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
+const wid_err_ptrn = endpoint =>
+    `${c.green}worker[${wid}]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]
+${c.red}[ERROR] ${endpoint}] ${c.white}`;
 // simple query logger
 let logit = (req, msg = "") =>
     Object({
@@ -53,6 +40,18 @@ let logit = (req, msg = "") =>
             .join("/")
     });
 
+
+// setup RPC channel
+const node_rpc_channel = channel.auth('master'); // connect to master channel
+// init RPC channel
+rpc.init(node_rpc_channel);
+// emit controller pass payload to rpc model
+exports.emit = payload => {
+    console.log(wid_ptrn('emit payload'))
+    rpc.emit(node_rpc_channel, payload);
+};
+exports.setRes = res => rpc.setRes(res);
+
 /**
  * Check Auth for REST request (not JSON-RPC)
  * */
@@ -68,10 +67,23 @@ exports.checkAuth = req =>
             log_err(e);
             return reject(e);
         }
-        // check AUTH and resolve or reject
-        auth(user, pass)
-            .then(msg => resolve(msg))
-            .catch(err => reject(err));
+        // emit RPC to AUTH
+        console.log(wid_ptrn('emit payload'));
+        let payload = {
+            method: 'auth',
+            user,
+            pass
+        };
+
+        rpc.emit(node_rpc_channel, payload, (err,data)=>{
+            rpc.setRes(null); // clear res object
+            if(err) return reject(err);
+            console.log('dddddddddaaaaata: \n',data);
+            let auth = data.msg.auth;
+            if(auth === 'ok') return resolve(data);
+            return reject();
+        });
+
     });
 
 /**

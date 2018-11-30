@@ -25,7 +25,7 @@ let nm_channel;
 
 const rpc_timeout_err = channel => `RPC service ${channel} request timeout occurred`;
 // redis RPC callback (JRPC-channel)
-const jrpc_callback = (err, data ) => {
+const jrpc_callback = (err, data) => {
     if(err) {
         console.log(wid_err_ptrn(err));
         return response.json(err)
@@ -36,18 +36,22 @@ const jrpc_callback = (err, data ) => {
 };
 
 // redis RPC callback (auth-channel)
-const auth_callback = (err, data ) => {
-    if(err) {
-        console.log(wid_err_ptrn(err));
-        return response.json(err)
-    }
-    console.log(wid_ptrn(`get callback from service ${auth_channel}`), '\n',data);
-    response.json(data);
-    response = null; // clear response object
-};
+// const auth_callback = (err, data) => {
+//     if(err) {
+//         console.log(wid_err_ptrn(err));
+//         // return response.status(401).json(err)
+//         return err
+//     }
+//     console.log(wid_ptrn(`get callback from service ${auth_channel}`), '\n',data);
+//     response = null; // clear response object
+//     let auth = data.msg;
+//     if(auth === 'ok') return data;
+//     return err
+//     // response.json(data);
+// };
 
 // redis RPC callback (nm-channel)
-const nm_callback = (err, data ) => {
+const nm_callback = (err, data) => {
     if(err) {
         console.log(wid_err_ptrn(err));
         return response.json(err)
@@ -77,11 +81,11 @@ exports.init = channel =>  {
 // set response object
 exports.setRes = res => response = res;
 // exports RPC emitter
-exports.emit = (channel, payload) =>  {
+exports.emit = (channel, payload, cbb) =>  {
     console.log(wid_ptrn(`send payload to service ${channel}`),'\n',payload);
     let cb; // RPC callback
     if(/jrpc:/.test(channel)) cb = jrpc_callback;
-    if(/auth:/.test(channel)) cb = auth_callback;
+    if(/auth:/.test(channel)) cb = cbb;
     if(/nm:/.test(channel)) cb = nm_callback;
     /* Trigger an event on the channel "node_rpc:<wid>"
      *  arg1 - channel

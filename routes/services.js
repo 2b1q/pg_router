@@ -1,8 +1,8 @@
 const router = require("express").Router(),
-    { color: c, restricted_endpoints, restricted_services } = require("../config/config"),
-    { regUser, checkAuth } = require("../controllers/rpc/v1/rpc_auth"),
-    // { get: clientGet } = require("../modules/node_interaction/adapter_clients"),
-    { getNodes, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager");
+    { color: c, restricted_services } = require("../config/config"),
+    { regUser, checkAuth, setRes } = require("../controllers/rpc/v1/rpc_auth"), // RPC auth module
+    { get: clientGet } = require("../modules/adapter_proxy/adapter_clients"), // adapter proxy client module (direct)
+    { getNodes, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager"); // todo RPC NM module
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
@@ -30,6 +30,7 @@ router.get(restricted_zone, async (req, res) => {
     console.log(c.yellow, "service to proxy:", c.magenta, service, c.white);
     // if endpoint = 'help' -> redirect to constructed service url helper without AUTH
     if (endpoint === "help") return res.redirect(await clientGet(service));
+    setRes(res); // setup response object to request timeout CB()
     checkAuth(req)
         .then(async () => {
             // await service request
@@ -44,13 +45,14 @@ router.get(restricted_zone, async (req, res) => {
         .catch(msg => res.status(401).json(msg));
 });
 
+// todo NM RPC interaction
 /** node management endpoints */
-router
-    .route(v1_ptrn("node"))
-    .get(getNodes) // get nodes
-    .post(addNode) // add node
-    .delete(remNode) // remove node
-    .put(updNode); // update node
+// router
+//     .route(v1_ptrn("node"))
+//     .get(getNodes) // get nodes
+//     .post(addNode) // add node
+//     .delete(remNode) // remove node
+//     .put(updNode); // update node
 
 /** SSO reg/Logout endpoints */
 router.post(v1_ptrn("user"), regUser); // reg new user OR get current if user exists

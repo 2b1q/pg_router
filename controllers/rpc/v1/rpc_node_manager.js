@@ -1,3 +1,5 @@
+// todo add RPC interaction with NM service-model
+
 const cfg = require("../../../config/config"),
     moment = require("moment"),
     { color: c, api_version: API_VERSION } = cfg,

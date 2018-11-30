@@ -1,3 +1,5 @@
+// todo add RPC interaction with AUTH service-model
+
 /*
 * REST controller
 * AUTH check

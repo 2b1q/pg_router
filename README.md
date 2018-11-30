@@ -10,7 +10,7 @@ Stateless apps container:
     - direct proxying to adapters endpoints (AUTH required)
     - AUTH (RPC service)
     - reg user (RPC service)
-    - helpers proxy (AUTH not required)   
+    - helpers proxy (AUTH not required)
 ## Architecture
 ![](pg_router.jpg)
 ### PGR components

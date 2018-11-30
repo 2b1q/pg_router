@@ -1,22 +1,34 @@
 # payment-gateway-router [PGR]
-- Common entry point to interact with **BTL/LTC** nodes and services
-    - [transparent node proxying] *JSON-RPC* interaction with **BTL/LTC** node 
-    - [service routing] REST service routing
-- Request balancing and routing by client *HTTP headers* and *virtual user_name*
-    - reg one user and get virtual users to interact with all node types 
-    - use <node_type>@<user_name> pattern to query routing
-    - use JSON-RPC to interact with **BTL/LTC** nodes
-    - use REST to service requests
-- User management 
-    - [REST API] Create PGR user
-    - [REST API] List user services
-    - [REST API] Service request authentication
-    - [JSON-RPC] Node request authentication
+Stateless apps container:
+- App1 (HTTP JSON-RPC BTC proxy)
+        - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+        - best node lookup (RPC service - pg_nm)
+- App2 (HTTP JSON-RPC LTC proxy)
+        - BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+        - best node lookup (RPC service - pg_nm)
+- App3 (HTTP REST API)
+        - direct proxying to adapters endpoints (AUTH required)
+        - AUTH (RPC service)
+        - reg user (RPC service)
+        - helpers proxy (AUTH not required)
+        
+## Architecture
+![](pg_router.jpg)
 ### PGR components
-- pgr_stack
-    - pgw_node (payment gateway node.js router)
-    - pgw_mongo (pgw data store)
-    - pgw_mongo-express (pgw UI db management console)
+- pgr_stack (infrastructure containers)
+    - pg_mongo (pgr data store)
+    - pg_mongo-express (pgr UI db management console)
+    - pg_redis (in memory async RPC APP interaction middleware)
+- pgr_stack (APP containers)
+    - pg_router (payment gateway node.js router - core)
+    - pg_auth (stateless async AUTH micro service)
+    - pg_json_rpc_proxy (stateless async JSON-RPC proxy micro service)
+    - pg_nm (stateless async node management micro service)
+        - BTC/LTC node manager
+        - scheduler
+        - node checker
+        - best node provider
+### proxy resources 
 - nodes
     - BTC
     - LTC
@@ -28,17 +40,17 @@
 - [Node.js](https://nodejs.org/) v8+ to run.
 - config.js 
 - docker
-### Install and Run PGR
+### Install and Run PGR (legacy)
 1. `cp config-example.js config.js`
 2. edit config.js (setup env properties)
 3. run (docker-compose -f stack.yml up -d)
 ```sh
 $ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git
 $ cd payment-gateway-router
-$ docker-compose -f stack.yml up -d
+$ docker-compose -f pg_stack.yml up -d
 ```
-## Usage
-### new PGR user REST request
+## Usage (legacy)
+### new PGR user REST request (legacy)
 Lets create a new PGR user
 ```sh
 $ curl -s 'http://localhost:3006/api/v1/user' -X POST -H "Content-Type:application/json" --user myNewUser:myNewPassword -d '{}'
@@ -74,7 +86,7 @@ $ curl -s 'http://localhost:3006/'  --data-binary $'{\n "jsonrpc": "1.0",\n "met
   "id": null
 }
 ```
-### LTC/BTC/rates services request proxying
+### LTC/BTC/rates services request proxying (legacy)
 Lets try ask **rates**
 use *user_name:user_password* to GET response from service.
 service proxying request patterns:
@@ -116,7 +128,7 @@ $ curl -s 'http://localhost:3006/api/v1/btc/rates/all?from=BTC' -X GET  --user a
   }
 }
 ```
-### LTC/BTC JSON-RPC node request proxying
+### LTC/BTC JSON-RPC node request proxying (legacy)
 Use basic cURL json-rpc request to get data from node
 node json-rpc request pattern:
 `curl -s 'http://pgr_host:pgr_port/'  --data-binary $'{\n "jsonrpc": "1.0",\n "method": "node method",\n "params": []\n}' --user <node_type>@<user_name>:<user_password>`

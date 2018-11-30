@@ -16,6 +16,7 @@ App3 (HTTP REST API)
     - AUTH (RPC service)
     - reg user (RPC service)
     - helpers proxy (AUTH not required)
+    
 ## Architecture
 ![](pg_router.jpg)
 ### PGR components

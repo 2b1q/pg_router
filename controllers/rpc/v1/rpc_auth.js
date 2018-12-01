@@ -1,8 +1,7 @@
-// todo add RPC interaction with AUTH service-model
 /*
 * REST controller
-* AUTH check
-* regNew user
+* AUTH check (RPC)
+* regNew user (RPC)
 * */
 const moment = require("moment"),
     { project, api_version: API_VERSION, color: c, store } = require("../../../config/config"),
@@ -75,12 +74,18 @@ exports.checkAuth = req =>
             pass
         };
 
-        rpc.emit(node_rpc_channel, payload, (err,data)=>{
+        /*
+         * RPC emitter
+         * arg1 - channel
+         * arg2 - payload
+         * arg3 - callback
+         *  */
+        rpc.emit(node_rpc_channel, payload, (err, data) => {
             rpc.setRes(null); // clear res object
             if(err) return reject(err);
-            console.log('dddddddddaaaaata: \n',data);
-            let auth = data.msg.auth;
-            if(auth === 'ok') return resolve(data);
+            console.log(wid_ptrn('data from RPC'));
+            console.log(data);
+            if(data.msg.auth) return resolve(data);
             return reject();
         });
 

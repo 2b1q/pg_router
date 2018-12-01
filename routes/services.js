@@ -42,7 +42,10 @@ router.get(restricted_zone, async (req, res) => {
             console.log("service URL :", url);
             res.json({ msg: "authorized", serviceUrl: url, result: result });
         })
-        .catch(msg => res.status(401).json(msg));
+        .catch(msg => {
+            console.error(msg);
+            res.status(401).json(msg)
+        });
 });
 
 // todo NM RPC interaction

@@ -1,10 +1,14 @@
+/*
+* RPC module
+* - RPC interaction with services [Auth, json-rpc-proxy, node-manager]
+* */
 const cfg = require("../config/config"),
     { color: c, api_version: API_VERSION, store } = cfg,
     { redis: redis_cfg, channel } = store,
     { id: wid } = require("cluster").worker; // access to cluster.worker.id
 
 // current module
-const _module_ = "RPC-module";
+const _module_ = "RPC interaction module";
 // worker id pattern
 const wid_ptrn = endpoint =>
     `${c.green}worker[${wid}]${c.red}[${_module_}]${c.yellow}[${API_VERSION}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
@@ -24,7 +28,11 @@ let jrpc_channel;
 let nm_channel;
 
 const rpc_timeout_err = channel => `RPC service ${channel} request timeout occurred`;
-// redis RPC callback (JRPC-channel)
+/*
+* Redis RPC callback
+* - json-rpc interaction cb
+* - use response object to send response directly from this RPC module
+* */
 const jrpc_callback = (err, data) => {
     if(err) {
         console.log(wid_err_ptrn(err));
@@ -34,21 +42,6 @@ const jrpc_callback = (err, data) => {
     response.json(data);
     response = null; // clear response object
 };
-
-// redis RPC callback (auth-channel)
-// const auth_callback = (err, data) => {
-//     if(err) {
-//         console.log(wid_err_ptrn(err));
-//         // return response.status(401).json(err)
-//         return err
-//     }
-//     console.log(wid_ptrn(`get callback from service ${auth_channel}`), '\n',data);
-//     response = null; // clear response object
-//     let auth = data.msg;
-//     if(auth === 'ok') return data;
-//     return err
-//     // response.json(data);
-// };
 
 // redis RPC callback (nm-channel)
 const nm_callback = (err, data) => {
@@ -81,11 +74,11 @@ exports.init = channel =>  {
 // set response object
 exports.setRes = res => response = res;
 // exports RPC emitter
-exports.emit = (channel, payload, cbb) =>  {
+exports.emit = (channel, payload, callback) =>  {
     console.log(wid_ptrn(`send payload to service ${channel}`),'\n',payload);
     let cb; // RPC callback
     if(/jrpc:/.test(channel)) cb = jrpc_callback;
-    if(/auth:/.test(channel)) cb = cbb;
+    if(/auth:/.test(channel)) cb = callback; // register callback from AUTH controller
     if(/nm:/.test(channel)) cb = nm_callback;
     /* Trigger an event on the channel "node_rpc:<wid>"
      *  arg1 - channel

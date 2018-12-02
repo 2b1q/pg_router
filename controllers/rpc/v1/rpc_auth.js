@@ -81,12 +81,11 @@ exports.checkAuth = req =>
          * arg3 - callback
          *  */
         rpc.emit(node_rpc_channel, payload, (err, data) => {
+            console.log(wid_ptrn('got RPC callback'));
             rpc.setRes(null); // clear res object
             if(err) return reject(err);
-            console.log(wid_ptrn('data from RPC'));
             console.log(data);
-            if(data.msg.auth) return resolve(data);
-            return reject();
+            resolve(data);
         });
 
     });

@@ -1,12 +1,12 @@
 /*
-* REST controller
-* AUTH check (RPC)
-* regNew user (RPC)
-* */
+ * REST controller
+ * AUTH check (RPC)
+ * regNew user (RPC)
+ * */
 const moment = require("moment"),
     { project, api_version: API_VERSION, color: c, store } = require("../../../config/config"),
     { redis: redis_cfg, channel } = store,
-    rpc = require('../../../modules/rpc'), // RPC wrapper
+    rpc = require("../../../modules/rpc"), // RPC wrapper
     { api_requests: log_api, error: log_err } = require("../../../utils/logger")(module),
     cluster = require("cluster"),
     // { newUser, checkAuth: auth } = require("../../../modules/auth/v1/auth"), // auth module
@@ -39,14 +39,13 @@ let logit = (req, msg = "") =>
             .join("/")
     });
 
-
 // setup RPC channel
-const node_rpc_channel = channel.auth('master'); // connect to master channel
+const node_rpc_channel = channel.auth("master"); // connect to master channel
 // init RPC channel
 rpc.init(node_rpc_channel);
 // emit controller pass payload to rpc model
 exports.emit = payload => {
-    console.log(wid_ptrn('emit payload'))
+    console.log(wid_ptrn("emit payload"));
     rpc.emit(node_rpc_channel, payload);
 };
 exports.setRes = res => rpc.setRes(res);
@@ -67,9 +66,9 @@ exports.checkAuth = req =>
             return reject(e);
         }
         // emit RPC to AUTH
-        console.log(wid_ptrn('emit payload'));
+        console.log(wid_ptrn("emit payload"));
         let payload = {
-            method: 'auth',
+            method: "auth",
             user,
             pass
         };
@@ -81,13 +80,12 @@ exports.checkAuth = req =>
          * arg3 - callback
          *  */
         rpc.emit(node_rpc_channel, payload, (err, data) => {
-            console.log(wid_ptrn('got RPC callback'));
+            console.log(wid_ptrn("got RPC callback"));
             rpc.setRes(null); // clear res object
-            if(err) return reject(err);
+            if (err) return reject(err);
             console.log(data);
             resolve(data);
         });
-
     });
 
 /**
@@ -117,20 +115,19 @@ exports.regUser = async (req, res) => {
 
     // Trigger an event on the channel "node_rpc"
     rpc.emit(
-        'user_mgmt',      // channel
+        "user_mgmt", // channel
         {
-          method: 'regUser',
+            method: "regUser",
             user,
             pass
         },
         {
-            type: 'rpc',            // trigger an event of type "rpc"
+            type: "rpc", // trigger an event of type "rpc"
             callback: rpc_callback // register a callback handler to be executed when the rpc result returns
         }
     );
 
-    res.json({ msg: 'test dummy payload'});
-
+    res.json({ msg: "test dummy payload" });
 };
 
 /**

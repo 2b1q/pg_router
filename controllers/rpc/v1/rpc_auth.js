@@ -65,7 +65,7 @@ exports.checkAuth = req =>
             log_err(e);
             return reject(e);
         }
-        // emit RPC to AUTH
+        // emit RPC to AUTH service => 'auth' method
         console.log(wid_ptrn("emit payload"));
         let payload = {
             method: "auth",
@@ -105,29 +105,29 @@ exports.regUser = async (req, res) => {
         return res.status(401).json(e);
     }
     console.log(`${c.green}regUser: ${c.magenta}${user}${c.green} pass: ${c.magenta}${pass}${c.green}${c.white}`);
-    // create new user OR return exist
-    // newUser(user, pass)
-    //     .then(userObject => res.json(userObject))
-    //     .catch(e => {
-    //         log_err(e);
-    //         res.status(401).json(e);
-    //     });
+    // set response object to RPC module (RPC for timeout handler)
+    rpc.setRes(res);
+    // emit RPC to AUTH service => 'regUser' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "regUser",
+        user,
+        pass
+    };
 
-    // Trigger an event on the channel "node_rpc"
-    rpc.emit(
-        "user_mgmt", // channel
-        {
-            method: "regUser",
-            user,
-            pass
-        },
-        {
-            type: "rpc", // trigger an event of type "rpc"
-            callback: rpc_callback // register a callback handler to be executed when the rpc result returns
-        }
-    );
-
-    res.json({ msg: "test dummy payload" });
+    /*
+     * RPC emitter
+     * arg1 - channel
+     * arg2 - payload
+     * arg3 - callback
+     *  */
+    rpc.emit(node_rpc_channel, payload, (err, data) => {
+        console.log(wid_ptrn("got RPC callback"));
+        rpc.setRes(null); // clear res object
+        if (err) return res.status(401).json(err);
+        console.log(data);
+        res.json(data);
+    });
 };
 
 /**

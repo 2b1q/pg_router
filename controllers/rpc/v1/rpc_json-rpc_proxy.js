@@ -1,5 +1,5 @@
 const cfg = require("../../../config/config"),
-    rpc = require('../../../modules/rpc'),
+    rpc = require("../../../modules/rpc"),
     moment = require("moment"),
     { color: c, api_version: API_VERSION, store } = cfg,
     { redis: redis_cfg, channel } = store,
@@ -15,12 +15,20 @@ const wid_err_ptrn = endpoint =>
 ${c.red}[ERROR] ${endpoint}] ${c.white}`;
 
 // setup RPC channel
-const node_rpc_channel = channel.jrpc('master'); // connect to master channel
+const node_rpc_channel = channel.jrpc("master"); // connect to master channel
 // init RPC channel
 rpc.init(node_rpc_channel);
 // emit controller pass payload to rpc model
-exports.emit = payload => {
-    console.log(wid_ptrn('emit payload'))
-    rpc.emit(node_rpc_channel, payload);
+exports.emit = (payload, res) => {
+    console.log(wid_ptrn("emit payload"));
+    rpc.emit(node_rpc_channel, payload, (err, data) => {
+        if (err) {
+            console.log(wid_err_ptrn(err));
+            return res.json({ error: err, result: null, id: null });
+        }
+        console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod '${payload.method}`), "\n", data);
+        let { msg: response } = data;
+        res.json(response);
+    });
 };
-exports.setRes = res => rpc.setRes(res);
+// exports.setRes = res => rpc.setRes(res);

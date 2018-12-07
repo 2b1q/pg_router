@@ -48,14 +48,14 @@ exports.emit = payload => {
     console.log(wid_ptrn("emit payload"));
     rpc.emit(node_rpc_channel, payload);
 };
-exports.setRes = res => rpc.setRes(res);
+// exports.setRes = res => rpc.setRes(res);
 
 /**
  * Check Auth for REST request (not JSON-RPC)
  * */
 exports.checkAuth = req =>
     new Promise(async (resolve, reject) => {
-        console.log(`${wid_ptrn("checkAuth")}`);
+        console.log(wid_ptrn("checkAuth"));
         // log req params
         log_api(logit(req));
         // dispatch user creds sync
@@ -94,7 +94,7 @@ exports.checkAuth = req =>
  * Get current JWT (access + refresh) if user exists
  * */
 exports.regUser = async (req, res) => {
-    console.log(`${wid_ptrn("regUser")}`);
+    console.log(wid_ptrn("regUser"));
     // log req params
     log_api(logit(req));
     // dispatch user creds sync

@@ -2,36 +2,40 @@ const express = require("express"),
     { id: wid } = require("cluster").worker, // access to cluster.worker.id
     http = require("http"),
     bodyParser = require("body-parser"),
-    jrpc = require('../controllers/rpc/v1/rpc_json-rpc_proxy'), // RPC interaction with PG_JSON-RPC
+    jrpc = require("../controllers/rpc/v1/rpc_json-rpc_proxy"), // RPC interaction with PG_JSON-RPC
+    { getBestNode } = require("../controllers/rpc/v1/rpc_node_manager"), // RPC interaction with PG_node_manager
+    { setRes } = require("../modules/rpc"), // set response object to RPC module
     cfg = require("../config/config"),
     c = cfg.color,
     env = process.env.NODE_ENV;
 
 /*
-* require applications ports
-* port1 - HTTP REST API
-*   > direct proxying to adapters endpoints (AUTH required)
-*   > AUTH (RPC service)
-*   > reg user (RPC service)
-*   > helpers proxy
-* port2 - HTTP JSON-RPC
-*   > BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-*   > best node lookup (RPC service - pg_nm)
-* port3 - HTTP JSON-RPC
-*   > LTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-*   > best node lookup (RPC service - pg_nm)
-* port4 - HTTP JSON-RPC
-*   > BTC test-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-*   > best node lookup (RPC service - pg_nm)
-* port5 - HTTP JSON-RPC
-*   > LTC test-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
-*   > best node lookup (RPC service - pg_nm)
-* */
-const {              server: { port: port1 }, // HTTP REST API
-        btc_main_net_server: { port: port2 }, // JSON-RPC BTC main-net
-        ltc_main_net_server: { port: port3 }, // JSON-RPC LTC main-net
-        btc_test_net_server: { port: port4 },
-        ltc_test_net_server: { port: port5 }} = cfg;
+ * require applications ports
+ * port1 - HTTP REST API
+ *   > direct proxying to adapters endpoints (AUTH required)
+ *   > AUTH (RPC service)
+ *   > reg user (RPC service)
+ *   > helpers proxy
+ * port2 - HTTP JSON-RPC
+ *   > BTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+ *   > best node lookup (RPC service - pg_nm)
+ * port3 - HTTP JSON-RPC
+ *   > LTC main-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+ *   > best node lookup (RPC service - pg_nm)
+ * port4 - HTTP JSON-RPC
+ *   > BTC test-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+ *   > best node lookup (RPC service - pg_nm)
+ * port5 - HTTP JSON-RPC
+ *   > LTC test-net JSON-RPC proxy (RPC with pg_jrpc service)(AUTH not required)
+ *   > best node lookup (RPC service - pg_nm)
+ * */
+const {
+    server: { port: port1 }, // HTTP REST API
+    btc_main_net_server: { port: port2 }, // JSON-RPC BTC main-net
+    ltc_main_net_server: { port: port3 }, // JSON-RPC LTC main-net
+    btc_test_net_server: { port: port4 },
+    ltc_test_net_server: { port: port5 }
+} = cfg;
 
 // Normalize a port into a number, string, or false
 function normalizePort(val) {
@@ -43,9 +47,9 @@ function normalizePort(val) {
 /**
  * init HTTP servers
  */
-const restAppPort = normalizePort(port1);   // HTTP REST API server port
-const btcAppPort = normalizePort(port2);    // HTTP JSON-RPC BTC-MAIN net SRV port
-const ltcAppPort = normalizePort(port3);    // HTTP JSON-RPC LTC-MAIN net SRV port
+const restAppPort = normalizePort(port1); // HTTP REST API server port
+const btcAppPort = normalizePort(port2); // HTTP JSON-RPC BTC-MAIN net SRV port
+const ltcAppPort = normalizePort(port3); // HTTP JSON-RPC LTC-MAIN net SRV port
 /** init express frameworks */
 const app1 = express();
 const app2 = express();
@@ -101,11 +105,17 @@ app2.use(bodyParser.json({ type: req => true })) // parse any Content-type as js
         next();
     })
     // proxying node-RPC requests
-    .use((req, res, next) => {
+    .use(async (req, res, next) => {
         let { jsonrpc } = req.body;
-        if(!jsonrpc) next();
-        jrpc.setRes(res);
-        jrpc.emit({...req.body, node_type: 'btc'});
+        if (!jsonrpc) next();
+        let type = "btc";
+        setRes(res); // set response object for RPC response service timeOut error
+        try {
+            var cfg = await getBestNode(type); // request node config from NodeManager service by RedisRPC
+        } catch (e) {
+            return res.json({ error: e, result: null, id: null });
+        }
+        jrpc.emit({ ...req.body, node_type: type, config: cfg }, res);
     })
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler
@@ -138,11 +148,17 @@ app3.use(bodyParser.json({ type: req => true })) // parse any Content-type as js
         next();
     })
     // proxying node-RPC requests
-    .use((req, res, next) => {
+    .use(async (req, res, next) => {
         let { jsonrpc } = req.body;
-        if(!jsonrpc) next();
-        jrpc.setRes(res);
-        jrpc.emit({...req.body, node_type: 'ltc'})
+        if (!jsonrpc) next();
+        let type = "ltc";
+        setRes(res); // set response object for RPC response service timeOut error
+        try {
+            var cfg = await getBestNode(type); // request node config from NodeManager service by RedisRPC
+        } catch (e) {
+            return res.json({ error: e, result: null, id: null });
+        }
+        jrpc.emit({ ...req.body, node_type: type, config: cfg }, res);
     })
     .use((req, res) => res.status(404).json(cfg.errors["404"])) // Last ROUTE catch 404 and forward to error handler
     // error handler
@@ -160,10 +176,9 @@ app3.use(bodyParser.json({ type: req => true })) // parse any Content-type as js
 const server1 = http.createServer(app1); // create HTTP server for REST API requests
 const server2 = http.createServer(app2); // create HTTP server for JSON-RPC requests
 const server3 = http.createServer(app3); // create HTTP server for JSON-RPC requests
-server1.listen(restAppPort);             // Listen Node server on provided port
-server2.listen(btcAppPort);              // Listen Node server on provided port
-server3.listen(ltcAppPort);              // Listen Node server on provided port
-
+server1.listen(restAppPort); // Listen Node server on provided port
+server2.listen(btcAppPort); // Listen Node server on provided port
+server3.listen(ltcAppPort); // Listen Node server on provided port
 
 /** Server1 events ['error', 'listening'] handler */
 server1
@@ -214,7 +229,9 @@ server2
     .on("listening", () => {
         let addr = server2.address();
         let bind = typeof addr === "string" ? "pipe " + addr : addr.port;
-        console.log(`${c.cyan}WORKER[${wid}] ${c.magenta}JSON-RPC BTC MAIN net ${c.cyan}server proxy listen port ${c.yellow}${bind}${c.white}`);
+        console.log(
+            `${c.cyan}WORKER[${wid}] ${c.magenta}JSON-RPC BTC MAIN net ${c.cyan}server proxy listen port ${c.yellow}${bind}${c.white}`
+        );
     });
 
 /** Server3 events ['error', 'listening'] handler */
@@ -240,5 +257,7 @@ server3
     .on("listening", () => {
         let addr = server3.address();
         let bind = typeof addr === "string" ? "pipe " + addr : addr.port;
-        console.log(`${c.cyan}WORKER[${wid}] ${c.magenta}JSON-RPC LTC MAIN net ${c.cyan}server proxy listen port ${c.yellow}${bind}${c.white}`);
+        console.log(
+            `${c.cyan}WORKER[${wid}] ${c.magenta}JSON-RPC LTC MAIN net ${c.cyan}server proxy listen port ${c.yellow}${bind}${c.white}`
+        );
     });

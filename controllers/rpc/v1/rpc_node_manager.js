@@ -2,34 +2,94 @@
 
 const cfg = require("../../../config/config"),
     moment = require("moment"),
-    { color: c, api_version: API_VERSION } = cfg,
+    { project, color: c, api_version: API_VERSION, store } = cfg,
+    { redis: redis_cfg, channel } = store,
+    rpc = require("../../../modules/rpc"), // RPC wrapper
     { id: wid } = require("cluster").worker; // access to cluster.worker.id
 
 // current module
-const _module_ = "Controller";
+const _module_ = "node manager controller";
 // worker id pattern
-const wid_ptrn = msg =>
-    `${c.green}worker[${wid}]${c.red}[node manager]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${msg}] ${
-        c.white
-    }`;
+const wid_ptrn = endpoint =>
+    `${c.green}worker[${wid}]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]${c.red} > ${c.green}[${endpoint}] ${c.white}`;
+const wid_err_ptrn = endpoint =>
+    `${c.green}worker[${wid}]${c.yellow}[${API_VERSION}]${c.cyan}[${_module_}]
+${c.red}[ERROR] ${endpoint}] ${c.white}`;
+// simple query logger
+let logit = (req, msg = "") =>
+    Object({
+        msg: msg,
+        api_version: API_VERSION,
+        module: "AUTH API controller",
+        project: project,
+        post_params: req.body,
+        get_params: req.query,
+        url_pathL: req.url,
+        timestamp: (() => moment())(),
+        path: module.filename
+            .split("/")
+            .slice(-2)
+            .join("/")
+    });
 // error object constructor
 const error = (errCode, msg) => Object({ errCode, msg });
 
+// setup RPC channel
+const node_rpc_channel = channel.nm("master"); // connect to master channel
+// init RPC channel
+rpc.init(node_rpc_channel);
+// emit controller pass payload to rpc model
+exports.emit = payload => {
+    console.log(wid_ptrn("emit payload"));
+    rpc.emit(node_rpc_channel, payload);
+};
+// exports.setRes = res => rpc.setRes(res);
+
+/**
+ * getBestNode type CFG
+ * */
+exports.getBestNode = type =>
+    new Promise(async (resolve, reject) => {
+        console.log(wid_ptrn(`getBestNode ${type}`));
+        // emit RPC to AUTH service => 'auth' method
+        console.log(wid_ptrn("emit payload"));
+        let payload = {
+            method: "getBestNode",
+            to: "checker",
+            params: {
+                node_type: type
+            }
+        };
+        /*
+         * RPC emitter
+         * arg1 - channel
+         * arg2 - payload
+         * arg3 - callback
+         *  */
+        rpc.emit(node_rpc_channel, payload, (err, data) => {
+            console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod 'getBestNode\n`));
+            rpc.setRes(null); // clear res object
+            if (err) return reject(err);
+            console.log(data);
+            let { msg: config } = data; // get config
+            resolve(config);
+        });
+    });
+
 /*
-*  check API_KEY for node management requests
-* */
+ * Legacy code
+ * */
+/*
+ *  check API_KEY for node management requests
+ * */
 const chekApiKey = ({ api_key }) => api_key === process.env.mgmt_api_key && process.env.mgmt_api_key !== undefined;
 
 // debug node config
 const nodes_ = {};
-// Object.keys(nodes).forEach(type => {
-//     if (!nodes_[type + "_nodes"]) nodes_[type + "_nodes"] = [];
-//     nodes_[type + "_nodes"].push({ type: type, status: "bootstrapping...", lastBlock: 0, updateTime: moment(), config: nodes[type] });
-// });
 
 /*
-* get all nodes
-* */
+ * get all nodes
+ * */
 exports.getNodes = async (req, res) => {
     console.log(wid_ptrn("getNodes"));
     if (chekApiKey(req.headers)) return res.json(nodes_);
@@ -37,24 +97,24 @@ exports.getNodes = async (req, res) => {
 };
 
 /*
-* add node
-* */
+ * add node
+ * */
 exports.addNode = async (req, res) => {
     console.log(wid_ptrn("addNode"));
     res.json(nodes_);
 };
 
 /*
-* update node
-* */
+ * update node
+ * */
 exports.updNode = async (req, res) => {
     console.log(wid_ptrn("updNode"));
     res.json(nodes_);
 };
 
 /*
-* remove node
-* */
+ * remove node
+ * */
 exports.remNode = async (req, res) => {
     console.log(wid_ptrn("remNode"));
     res.json(nodes_);

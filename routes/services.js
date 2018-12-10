@@ -44,15 +44,15 @@ router.get(restricted_zone, async (req, res) => {
         })
         .catch(msg => {
             console.error(msg);
-            res.status(401).json(msg)
+            res.status(401).json(msg);
         });
 });
 
-// todo NM RPC interaction
 /** node management endpoints */
-// router
-//     .route(v1_ptrn("node"))
-//     .get(getNodes) // get nodes
+router.route(v1_ptrn("nodes")).get(getNodes); // get all nodes
+
+// todo NM RPC interaction
+// router.route(v1_ptrn("node")).get(getNodes); // get all nodes
 //     .post(addNode) // add node
 //     .delete(remNode) // remove node
 //     .put(updNode); // update node

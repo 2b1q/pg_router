@@ -77,24 +77,55 @@ exports.getBestNode = type =>
     });
 
 /*
- * Legacy code
- * */
-/*
  *  check API_KEY for node management requests
  * */
 const chekApiKey = ({ api_key }) => api_key === process.env.mgmt_api_key && process.env.mgmt_api_key !== undefined;
 
-// debug node config
-const nodes_ = {};
-
 /*
  * get all nodes
+ * - check API_KEY
+ * - send RPC MSG to pg_nm
+ * - get RPC cb
+ * - send response
  * */
 exports.getNodes = async (req, res) => {
     console.log(wid_ptrn("getNodes"));
-    if (chekApiKey(req.headers)) return res.json(nodes_);
-    res.status(401).json(error(401, "Bad API_KEY"));
+    // emit RPC to NM service => 'list' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "list",
+        to: "checker",
+        params: {
+            node_type: "all"
+        }
+    };
+    // check API_KEY
+    if (chekApiKey(req.headers)) {
+        // set res object to RPC module (need on RPC timeout)
+        rpc.setRes(res);
+        /*
+         * RPC emitter
+         * arg1 - channel
+         * arg2 - payload
+         * arg3 - callback
+         *  */
+        rpc.emit(node_rpc_channel, payload, (err, data) => {
+            console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod 'list\n`));
+            rpc.setRes(null); // clear res object
+            if (err) return res.json(error(400, err));
+            console.log(data);
+            let { msg: response } = data;
+            res.json(response);
+        });
+    } else res.status(401).json(error(401, "Bad API_KEY"));
 };
+
+/*
+ * Legacy code
+ * */
+
+// debug node config
+const nodes_ = { nodes: [] };
 
 /*
  * add node

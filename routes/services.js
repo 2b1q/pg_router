@@ -2,7 +2,7 @@ const router = require("express").Router(),
     { color: c, restricted_services } = require("../config/config"),
     { regUser, checkAuth, setRes } = require("../controllers/rpc/v1/rpc_auth"), // RPC auth module
     { get: clientGet } = require("../modules/adapter_proxy/adapter_clients"), // adapter proxy client module (direct)
-    { getNodes, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager"); // todo RPC NM module
+    { getNodes, getNodesByType, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager"); // todo RPC NM module
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
@@ -52,7 +52,7 @@ router.get(restricted_zone, async (req, res) => {
 router.route(v1_ptrn("nodes")).get(getNodes); // get all nodes
 
 // todo NM RPC interaction
-// router.route(v1_ptrn("node")).get(getNodes); // get all nodes
+router.route([v1_ptrn("node/*"), v1_ptrn("node")]).get(getNodesByType); // get all nodes by type
 //     .post(addNode) // add node
 //     .delete(remNode) // remove node
 //     .put(updNode); // update node

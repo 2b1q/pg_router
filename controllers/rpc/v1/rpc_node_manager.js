@@ -43,7 +43,31 @@ exports.emit = payload => {
     console.log(wid_ptrn("emit payload"));
     rpc.emit(node_rpc_channel, payload);
 };
-// exports.setRes = res => rpc.setRes(res);
+
+/*
+ * common RPC message wrapper
+ * arg 1 - response object
+ * arg 2 - RPC payload
+ * arg 3 - executor method
+ * */
+const rpcWrapper = (res, payload, method) => {
+    // set res object to RPC module (need on RPC timeout)
+    rpc.setRes(res);
+    /*
+     * RPC emitter
+     * arg1 - channel
+     * arg2 - payload
+     * arg3 - callback
+     *  */
+    return rpc.emit(node_rpc_channel, payload, (err, data) => {
+        console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod => ${method}\n`));
+        rpc.setRes(null); // clear res object
+        if (err) return res.json(error(400, err));
+        console.log(data);
+        let { msg: response } = data;
+        res.json(response);
+    });
+};
 
 /**
  * getBestNode type CFG
@@ -92,32 +116,41 @@ exports.getNodes = async (req, res) => {
     console.log(wid_ptrn("getNodes"));
     // emit RPC to NM service => 'list' method
     console.log(wid_ptrn("emit payload"));
+    let type = "all";
     let payload = {
         method: "list",
         to: "checker",
         params: {
-            node_type: "all"
+            node_type: type
         }
     };
     // check API_KEY
-    if (chekApiKey(req.headers)) {
-        // set res object to RPC module (need on RPC timeout)
-        rpc.setRes(res);
-        /*
-         * RPC emitter
-         * arg1 - channel
-         * arg2 - payload
-         * arg3 - callback
-         *  */
-        rpc.emit(node_rpc_channel, payload, (err, data) => {
-            console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod 'list\n`));
-            rpc.setRes(null); // clear res object
-            if (err) return res.json(error(400, err));
-            console.log(data);
-            let { msg: response } = data;
-            res.json(response);
-        });
-    } else res.status(401).json(error(401, "Bad API_KEY"));
+    if (chekApiKey(req.headers)) rpcWrapper(res, payload, `list node_type: ${type}`);
+    else res.status(401).json(error(401, "Bad API_KEY"));
+};
+
+/*
+ * get all nodes by Nodes type
+ * - check API_KEY
+ * - send RPC MSG to pg_nm
+ * - get RPC cb
+ * - send response
+ * */
+exports.getNodesByType = async (req, res) => {
+    let type = req.url.split("/").pop();
+    console.log(wid_ptrn(`getNodesByType ${type}`));
+    // emit RPC to NM service => 'list' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "list",
+        to: "checker",
+        params: {
+            node_type: type
+        }
+    };
+    // check API_KEY
+    if (chekApiKey(req.headers)) rpcWrapper(res, payload, `list node_type: ${type}`);
+    else res.status(401).json(error(401, "Bad API_KEY"));
 };
 
 /*

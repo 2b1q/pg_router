@@ -59,7 +59,7 @@ const rpcWrapper = (res, payload, method) => {
      * arg2 - payload
      * arg3 - callback
      *  */
-    return rpc.emit(node_rpc_channel, payload, (err, data) => {
+    rpc.emit(node_rpc_channel, payload, (err, data) => {
         console.log(wid_ptrn(`\ngot RPC callback \nfrom ${node_rpc_channel} channel\nmethod => ${method}\n`));
         rpc.setRes(null); // clear res object
         if (err) return res.json(error(400, err));

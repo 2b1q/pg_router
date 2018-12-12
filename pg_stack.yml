@@ -1,0 +1,106 @@
+version: "3"
+services:
+    pg_router:
+        build:
+          context: ./pg_router
+        command: npm start
+        restart: always
+        depends_on:
+            - pg_redis
+        environment:
+            - NODE_ENV=dev
+            - mgmt_api_key=nodemanager&*()
+        networks:
+            - pg-net
+        links:
+            - pg_redis:redis
+
+    pg_nm:
+        build:
+          context: ./pg_nm
+        command: npm start
+        restart: always
+        depends_on:
+            - pg_redis
+            - pg_mongo
+        environment:
+            - NODE_ENV=dev
+        networks:
+            - pg-net
+        links:
+            - pg_redis:redis
+            - pg_mongo:mongo
+
+    pg_jrpc:
+        build:
+          context: ./pg_jrpc_proxy
+        command: npm start
+        restart: always
+        depends_on:
+            - pg_redis
+        environment:
+            - NODE_ENV=dev
+        networks:
+            - pg-net
+        links:
+            - pg_redis:redis
+
+    pg_auth:
+        build:
+          context: ./pg_auth
+        command: npm start
+        restart: always
+        depends_on:
+            - pg_redis
+            - pg_mongo
+        environment:
+            - NODE_ENV=dev
+        networks:
+            - pg-net
+        links:
+            - pg_redis:redis
+            - pg_mongo:mongo
+
+    pg_mongo:
+        image: mongo:latest
+        container_name: pg_mongo
+        restart: always
+        volumes:
+            - db-data:/data/db
+        networks:
+            - pg-net
+        ports:
+            - "27017:27017"
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: toor
+
+    pg_mongo-express:
+        image: mongo-express
+        depends_on:
+            - pg_mongo
+        links:
+          - pg_mongo:mongo
+        networks:
+            - pg-net
+        restart: always
+        ports:
+            - "8081:8081"
+        environment:
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: toor
+
+    pg_redis:
+        image: redis
+        restart: always
+        networks:
+            - pg-net
+        restart: always
+        ports:
+            - "6379:6379"
+
+networks:
+    ? pg-net
+
+volumes:
+    ? db-data

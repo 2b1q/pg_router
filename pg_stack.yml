@@ -14,6 +14,10 @@ services:
             - pg-net
         links:
             - pg_redis:redis
+        ports:
+            - 3006:3006
+            - 9332:9332
+            - 8332:8332
 
     pg_nm:
         build:

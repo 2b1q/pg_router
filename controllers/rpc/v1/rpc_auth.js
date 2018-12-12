@@ -48,7 +48,7 @@ exports.emit = payload => {
     console.log(wid_ptrn("emit payload"));
     rpc.emit(node_rpc_channel, payload);
 };
-// exports.setRes = res => rpc.setRes(res);
+exports.setRes = res => rpc.setRes(res); // need for NM AUTH requests
 
 /**
  * Check Auth for REST request (not JSON-RPC)

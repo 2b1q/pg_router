@@ -112,7 +112,7 @@ const chekApiKey = ({ api_key }) => api_key === process.env.mgmt_api_key && proc
  * - get RPC cb
  * - send response
  * */
-exports.getNodes = async (req, res) => {
+exports.nodes = async (req, res) => {
     console.log(wid_ptrn("getNodes"));
     // emit RPC to NM service => 'list' method
     console.log(wid_ptrn("emit payload"));
@@ -136,7 +136,7 @@ exports.getNodes = async (req, res) => {
  * - get RPC cb
  * - send response
  * */
-exports.getNodesByType = async (req, res) => {
+exports.nodesByType = async (req, res) => {
     let type = req.url.split("/").pop();
     console.log(wid_ptrn(`getNodesByType ${type}`));
     // emit RPC to NM service => 'list' method
@@ -153,6 +153,29 @@ exports.getNodesByType = async (req, res) => {
     else res.status(401).json(error(401, "Bad API_KEY"));
 };
 
+/*
+ * get node by node hash or node id
+ * - check API_KEY
+ * - send RPC MSG to pg_nm
+ * - get RPC cb
+ * - send response
+ * */
+exports.nodeByHid = async (req, res) => {
+    let { hid } = req.query;
+    console.log(wid_ptrn(`getNodeByHid ${hid}`));
+    // emit RPC to NM service => 'list' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "get",
+        to: "checker",
+        params: {
+            hid: hid
+        }
+    };
+    // check API_KEY
+    if (chekApiKey(req.headers)) rpcWrapper(res, payload, `get node_by_hid: ${hid}`);
+    else res.status(401).json(error(401, "Bad API_KEY"));
+};
 /*
  * Legacy code
  * */

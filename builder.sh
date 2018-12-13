@@ -58,21 +58,11 @@ case "$1" in
         echo "Usage: $0 install"
      fi
     ;;
-  rebuild)
-       if [ -e $target_dir/pg_stack.yml ]; then
-          echo "rebuilding PGR stack" && \
-          cd $target_dir && \
-          docker-compose -f pg_stack.yml build
-       else
-          echo "stack components not installed" && \
-          echo "Usage: $0 install"
-       fi
-      ;;
   install)
     echo "installing PGR stack" && \
-    install && \
+    install
     ;;
   *)
-    echo "Usage: $0 {up|down|install|rebuild}"
+    echo "Usage: $0 {up|down|install}"
     ;;
 esac

@@ -2,7 +2,7 @@ version: "3"
 services:
     pg_router:
         build:
-          context: ./pg_router
+          context: ./payment-gateway-router
         command: npm start
         restart: always
         depends_on:
@@ -17,7 +17,7 @@ services:
 
     pg_nm:
         build:
-          context: ./pg_nm
+          context: ./payment-gateway-node-manager
         command: npm start
         restart: always
         depends_on:
@@ -33,7 +33,7 @@ services:
 
     pg_jrpc:
         build:
-          context: ./pg_jrpc_proxy
+          context: ./payment-gateway-jrpc-proxy
         command: npm start
         restart: always
         depends_on:
@@ -47,7 +47,7 @@ services:
 
     pg_auth:
         build:
-          context: ./pg_auth
+          context: ./payment-gateway-auth
         command: npm start
         restart: always
         depends_on:

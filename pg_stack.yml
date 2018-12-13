@@ -32,24 +32,24 @@ services:
             - pg_redis:redis
             - pg_mongo:mongo
 
-pg_router:
-    build:
-        context: ./payment-gateway-router
-    command: npm start
-    restart: always
-    depends_on:
-        - pg_redis
-    environment:
-        - NODE_ENV=dev
-        - mgmt_api_key=nodemanager&*()
-    networks:
-        - pg-net
-    links:
-        - pg_redis:redis
-    ports:
-        - 3006:3006
-        - 9332:9332
-        - 8332:8332
+    pg_router:
+        build:
+            context: ./payment-gateway-router
+        command: npm start
+        restart: always
+        depends_on:
+            - pg_redis
+        environment:
+            - NODE_ENV=dev
+            - mgmt_api_key=nodemanager&*()
+        networks:
+            - pg-net
+        links:
+            - pg_redis:redis
+        ports:
+            - 3006:3006
+            - 9332:9332
+            - 8332:8332
 
     pg_jrpc:
         build:

@@ -55,16 +55,27 @@ App3 (HTTP REST API)
 -   config.js
 -   docker
 
-### Install and Run PGR (legacy)
+### Install
 
-1. `cp config-example.js config.js`
-2. edit config.js (setup env properties)
-3. run (docker-compose -f stack.yml up -d)
+To install PGR stack run `./builder.sh install`
 
 ```sh
-$ git clone https://2b1q@bitbucket.org/bankexlab/payment-gateway-router.git
-$ cd payment-gateway-router
-$ docker-compose -f pg_stack.yml up -d
+$ chmod +x builder.sh
+$ ./builder.sh install
+```
+
+### Up/down PGR stack
+
+To start PGR stack with docker-composer run `./builder.sh up`
+
+```sh
+$ ./builder.sh up
+```
+
+To stop PGR stack with docker-composer (if docker-composer process logs to STDOUT => press `CTRL+C` and) `./builder.sh down`
+
+```sh
+$ ./builder.sh down
 ```
 
 ## Usage

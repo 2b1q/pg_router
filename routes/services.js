@@ -51,8 +51,10 @@ router.get(restricted_zone, async (req, res) => {
 /** node management endpoints */
 router.route(v1_ptrn("nodes")).get(nodes); // get all nodes
 router.route(v1_ptrn("node/*")).get(nodesByType); // get all nodes by type /api/v1/node/btc
-router.route(v1_ptrn("node")).get(nodeByHid); // get config node by node hash or node id
-//     .post(addNode) // add node
+router
+    .route(v1_ptrn("node"))
+    .get(nodeByHid) // get config node by node hash or node id
+    .post(addNode); // add node
 //     .delete(remNode) // remove node
 //     .put(updNode); // update node
 

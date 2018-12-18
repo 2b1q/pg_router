@@ -176,20 +176,38 @@ exports.nodeByHid = async (req, res) => {
     if (chekApiKey(req.headers)) rpcWrapper(res, payload, `get node_by_hid: ${hid}`);
     else res.status(401).json(error(401, "Bad API_KEY"));
 };
+
+/*
+ * add node config to NM service
+ * - check API_KEY
+ * - send RPC MSG to pg_nm
+ * - get RPC cb
+ * - send response
+ * */
+exports.addNode = async (req, res) => {
+    console.log(wid_ptrn("addNode"));
+    let { config, type } = req.body;
+    // emit RPC to NM service => 'list' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "add",
+        to: "checker",
+        params: {
+            config,
+            type
+        }
+    };
+    // check API_KEY
+    if (chekApiKey(req.headers)) rpcWrapper(res, payload, `add ${type} node`);
+    else res.status(401).json(error(401, "Bad API_KEY"));
+};
+
 /*
  * Legacy code
  * */
 
 // debug node config
 const nodes_ = { nodes: [] };
-
-/*
- * add node
- * */
-exports.addNode = async (req, res) => {
-    console.log(wid_ptrn("addNode"));
-    res.json(nodes_);
-};
 
 /*
  * update node

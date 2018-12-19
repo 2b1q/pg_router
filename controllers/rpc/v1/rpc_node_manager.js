@@ -160,7 +160,7 @@ exports.nodesByType = async (req, res) => {
  * - get RPC cb
  * - send response
  * */
-exports.nodeByHid = async (req, res) => {
+exports.getNodeByHid = async (req, res) => {
     let { hid } = req.query;
     console.log(wid_ptrn(`getNodeByHid ${hid}`));
     // emit RPC to NM service => 'list' method
@@ -203,24 +203,32 @@ exports.addNode = async (req, res) => {
 };
 
 /*
+ * remove node config by node hash or node id
+ * - check API_KEY
+ * - send RPC MSG to pg_nm
+ * - get RPC cb
+ * - send response
+ * */
+exports.rmNodeByHid = async (req, res) => {
+    let { hid } = req.body;
+    console.log(wid_ptrn(`rmNodeByHid ${hid}`));
+    // emit RPC to NM service => 'list' method
+    console.log(wid_ptrn("emit payload"));
+    let payload = {
+        method: "rm",
+        to: "checker",
+        params: {
+            hid: hid
+        }
+    };
+    // check API_KEY
+    if (chekApiKey(req.headers)) rpcWrapper(res, payload, `rm node_by_hid: ${hid}`);
+    else res.status(401).json(error(401, "Bad API_KEY"));
+};
+
+/*
  * Legacy code
  * */
 
 // debug node config
 const nodes_ = { nodes: [] };
-
-/*
- * update node
- * */
-exports.updNode = async (req, res) => {
-    console.log(wid_ptrn("updNode"));
-    res.json(nodes_);
-};
-
-/*
- * remove node
- * */
-exports.remNode = async (req, res) => {
-    console.log(wid_ptrn("remNode"));
-    res.json(nodes_);
-};

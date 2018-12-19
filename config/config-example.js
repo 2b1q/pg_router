@@ -47,6 +47,7 @@ const color = {
 
 /** Staging (default) environment */
 config.staging = {
+    node_types: ["btc", "ltc", "eth"],
     services: {
         btc_rates: service("btc_rates"),
         btc_adapter: service("btc_adapter"),
@@ -107,6 +108,7 @@ config.production = {};
 
 /** Dev environment */
 config.dev = {
+    node_types: ["btc", "ltc", "eth"],
     services: {
         btc_rates: service("btc_rates"),
         btc_adapter: service("btc_adapter"),

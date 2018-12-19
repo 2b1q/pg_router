@@ -1,8 +1,8 @@
 const router = require("express").Router(),
-    { color: c, restricted_services } = require("../config/config"),
+    { color: c, restricted_services, node_types } = require("../config/config"),
     { regUser, checkAuth, setRes } = require("../controllers/rpc/v1/rpc_auth"), // RPC auth module
     { get: clientGet } = require("../modules/adapter_proxy/adapter_clients"), // adapter proxy client module (direct)
-    { nodes, nodesByType, nodeByHid, addNode, remNode, updNode } = require("../controllers/rpc/v1/rpc_node_manager"); // todo RPC NM module
+    { nodes, nodesByType, getNodeByHid, addNode, rmNodeByHid } = require("../controllers/rpc/v1/rpc_node_manager"); // todo RPC NM module
 
 /** api prefix */
 const v1_ptrn = path => `/v1/${path}`; // v. 1 pattern
@@ -48,15 +48,34 @@ router.get(restricted_zone, async (req, res) => {
         });
 });
 
-/** node management endpoints */
-router.route(v1_ptrn("nodes")).get(nodes); // get all nodes
-router.route(v1_ptrn("node/*")).get(nodesByType); // get all nodes by type /api/v1/node/btc
+/*
+ * (NM) Node management endpoints
+ * NM_1_APIs: CRUD - node config (add/delete/update/get node config to check from NM service)
+ * NM_2_APIs: CRD - Create/Read/Delete Azure nodes API (Create/Delete/Read Azure node config)
+ * NM_3_APIs: Start/Stop node API
+ * */
+/*
+ * NM_1_APIs
+ * */
+// GET nodes by type routers [ '/v1/node/btc', '/v1/node/ltc', '/v1/node/eth' ]
+router.route(node_types.map(node => v1_ptrn(`node/${node}`))).get(nodesByType);
+// GET all nodes
+router.route(v1_ptrn("nodes")).get(nodes);
+// CRUD node config to check from NM service
 router
     .route(v1_ptrn("node"))
-    .get(nodeByHid) // get config node by node hash or node id
-    .post(addNode); // add node
-//     .delete(remNode) // remove node
+    .get(getNodeByHid) // get config node by node hash or node id
+    .post(addNode) // add node
+    .delete(rmNodeByHid); // remove node
 //     .put(updNode); // update node
+
+/*
+ * todo NM_2_APIs
+ * */
+
+/*
+ * todo NM_3_APIs
+ * */
 
 /** SSO reg/Logout endpoints */
 router.post(v1_ptrn("user"), regUser); // reg new user OR get current if user exists
